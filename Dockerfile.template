@@ -1,0 +1,12 @@
+FROM golang:1.11-alpine3.8 as build
+ENV GO111MODULE=on
+WORKDIR /go/src/app
+COPY . .
+RUN apk add --no-cache --update build-base git && \
+    GOOS=linux GOARCH=__GOLANG_ARCH__ make build
+
+FROM __BASEIMAGE_ARCH__/alpine:3.8
+COPY --from=build /go/src/app/unifi2mqtt /usr/local/bin/unifi2mqtt
+VOLUME /config
+RUN apk add --no-cache --update ca-certificates
+CMD ["unifi2mqtt"]
