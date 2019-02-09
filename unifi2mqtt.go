@@ -14,23 +14,26 @@ import (
 
 const (
 	sensorTopicTemplate = "%s/%s/state"
+	home                = "ON"
+	notHome             = "OFF"
 )
 
 // Unifi2Mqtt - Lookup device information from the unifi controller
 type Unifi2Mqtt struct {
-	discovery       bool
-	discoveryPrefix string
-	discoveryName   string
-	topicPrefix     string
-	host            string
-	port            string
-	site            string
-	username        string
-	password        string
-	awayTimeout     time.Duration
-	lookupInterval  time.Duration
-	devices         map[string]string
-	knownDevices    map[string]time.Time
+	discovery            bool
+	discoveryPrefix      string
+	discoveryName        string
+	topicPrefix          string
+	host                 string
+	port                 string
+	site                 string
+	username             string
+	password             string
+	awayTimeout          time.Duration
+	lookupInterval       time.Duration
+	macSlugMapping       map[string]string
+	deviceStatus         map[string]string
+	devicePreviousStatus map[string]string
 
 	client mqtt.Client
 }
@@ -50,8 +53,9 @@ func NewUnifi2Mqtt(config *Config, mqttFuncWrapper *mqttExtDI.MQTTFuncWrapper) *
 		username:        config.Username,
 		password:        config.Password,
 	}
-	x.devices = make(map[string]string, 0)
-	x.knownDevices = make(map[string]time.Time, 0)
+	x.macSlugMapping = make(map[string]string, 0)
+	x.deviceStatus = make(map[string]string, 0)
+	x.devicePreviousStatus = make(map[string]string, 0)
 
 	// Create a mapping between mac_addresses and names
 	for _, m := range config.DeviceMapping {
@@ -62,7 +66,9 @@ func NewUnifi2Mqtt(config *Config, mqttFuncWrapper *mqttExtDI.MQTTFuncWrapper) *
 
 		deviceMacAddress := parts[0]
 		deviceName := parts[1]
-		x.devices[deviceMacAddress] = deviceName
+		x.macSlugMapping[deviceMacAddress] = deviceName
+		x.deviceStatus[deviceName] = notHome
+		x.devicePreviousStatus[deviceName] = "init"
 	}
 
 	opts := mqttFuncWrapper.
@@ -109,29 +115,43 @@ func (t *Unifi2Mqtt) onDisconnect(client mqtt.Client, err error) {
 }
 
 func (t *Unifi2Mqtt) loop() {
+	log.Print("Connecting to Unifi")
 	u, err := unifi.Login(t.username, t.password, t.host, t.port, t.site, 5)
 	if err != nil {
 		log.Fatalf("Couldn't login to %s:%s with %s:<redacted>; %s", t.host, t.port, t.username, err)
 		return
 	}
 	defer u.Logout()
+	log.Print("Connected to Unifi")
 
+	log.Print("Selecting Site")
 	site, err := u.Site(t.site)
 	if err != nil {
 		log.Fatalf("Couldn't find site %s; %s", t.site, err)
 		return
 	}
+	log.Print("Selected Site")
 
+	log.Print("Forever Fetching Clients")
 	for {
+		// Default the status of all known macSlugMapping to not_home
+		for _, slug := range t.macSlugMapping {
+			t.deviceStatus[slug] = notHome
+		}
 
+		// Ask the unifi controller for all known clients
+		// log.Print("Fetching Clients")
 		clients, err := u.Sta(site)
 		if err != nil {
 			log.Fatalf("Couldn't find clients; %s", err)
 			continue
 		}
+		// log.Print("Fetched Clients")
 
+		// Devices known to the controller will have their status set based on the Last Seen time
+		// Devices missing will remain defaulted to not_home
 		for _, client := range clients {
-			slug, ok := t.devices[client.Mac]
+			slug, ok := t.macSlugMapping[client.Mac]
 			if !ok {
 				// log.Printf("%s is not a device that is cared about", client.Mac)
 				continue
@@ -139,24 +159,36 @@ func (t *Unifi2Mqtt) loop() {
 
 			ts := time.Unix(int64(client.LastSeen), 0)
 			old := time.Since(ts) > t.awayTimeout
-			topic := fmt.Sprintf(sensorTopicTemplate, t.topicPrefix, slug)
-			if _, ok := t.knownDevices[client.Mac]; ok && old {
-				log.Printf("%s (%s) is away", client.Mac, slug)
-				t.publish(topic, "not_home")
-				delete(t.knownDevices, client.Mac)
-			} else if !ok && !old {
-				log.Printf("%s (%s) is home", client.Mac, slug)
-				t.publish(topic, "home")
-				t.knownDevices[client.Mac] = ts
+			payload := home
+			if old {
+				payload = notHome
 			}
+
+			t.deviceStatus[slug] = payload
 		}
+
+		// Publish known device statuses
+		// log.Print("Publishing Statuses")
+		for slug, payload := range t.deviceStatus {
+
+			// Don't publish the status if the device status hasn't changed
+			previousPayload, _ := t.devicePreviousStatus[slug]
+			if previousPayload == payload {
+				continue
+			}
+
+			t.devicePreviousStatus[slug] = payload
+			topic := fmt.Sprintf(sensorTopicTemplate, t.topicPrefix, slug)
+			t.publish(topic, payload)
+		}
+		// log.Print("Published Statuses")
 
 		time.Sleep(t.lookupInterval)
 	}
 }
 
 func (t *Unifi2Mqtt) publishDiscovery() {
-	for _, deviceName := range t.devices {
+	for _, deviceName := range t.macSlugMapping {
 		sensor := strings.ToLower(deviceName)
 		mqd := mqttExtHA.MQTTDiscovery{
 			DiscoveryPrefix: t.discoveryPrefix,
@@ -164,10 +196,10 @@ func (t *Unifi2Mqtt) publishDiscovery() {
 			NodeID:          t.discoveryName,
 			ObjectID:        sensor,
 
-			Name:       fmt.Sprintf("%s %s", t.discoveryName, sensor),
-			StateTopic: fmt.Sprintf(sensorTopicTemplate, t.topicPrefix, sensor),
-			UniqueID:   fmt.Sprintf("%s.%s", t.discoveryName, sensor),
-			Icon:       "mdi:phone",
+			Name:        fmt.Sprintf("%s %s", t.discoveryName, sensor),
+			StateTopic:  fmt.Sprintf(sensorTopicTemplate, t.topicPrefix, sensor),
+			UniqueID:    fmt.Sprintf("%s.%s", t.discoveryName, sensor),
+			DeviceClass: "presence",
 		}
 
 		mqd.PublishDiscovery(t.client)

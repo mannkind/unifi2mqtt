@@ -31,7 +31,7 @@ Configuration happens via environmental variables
 
 ```bash
 UNIFI_HOST              - The hostname of the controller, defaults to "unifi.local"
-UNIFI_PORT              - The the port of the controller, defaults to "8843"
+UNIFI_PORT              - The the port of the controller, defaults to "8443"
 UNIFI_SITE              - The site of the controller, defaults to "default"
 UNIFI_USERNAME          - The username used to access the controller, defaults to "unifi"
 UNIFI_PASSWORD          - The password used to access the controller, defaults to "unifi"
@@ -42,7 +42,7 @@ MQTT_TOPICPREFIX        - [OPTIONAL] The MQTT topic on which to publish the coll
 MQTT_DISCOVERY          - [OPTIONAL] The MQTT discovery flag for Home Assistant, defaults to false
 MQTT_DISCOVERYPREFIX    - [OPTIONAL] The MQTT discovery prefix for Home Assistant, defaults to "homeassistant"
 MQTT_DISCOVERYNAME      - [OPTIONAL] The MQTT discovery name for Home Assistant, defaults to "unifi"
-MQTT_CLIENTID           - [OPTIONAL] The clientId, defaults to "DefaultUNIFI2MQTTClientID"
+MQTT_CLIENTID           - [OPTIONAL] The clientId, defaults to "DefaultUnifi2MqttClientID"
 MQTT_BROKER             - [OPTIONAL] The MQTT broker, defaults to "tcp://mosquitto.org:1883"
 MQTT_USERNAME           - [OPTIONAL] The MQTT username, default to ""
 MQTT_PASSWORD           - [OPTIONAL] The MQTT password, default to ""

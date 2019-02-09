@@ -12,7 +12,7 @@ import (
 type Config struct {
 	MQTT           *mqttExtCfg.MQTTConfig
 	Host           string        `env:"UNIFI_HOST"                 envDefault:"unifi"`
-	Port           string        `env:"UNIFI_PORT"                 envDefault:"8843"`
+	Port           string        `env:"UNIFI_PORT"                 envDefault:"8443"`
 	Site           string        `env:"UNIFI_SITE"                 envDefault:"default"`
 	Username       string        `env:"UNIFI_USERNAME"             envDefault:"unifi"`
 	Password       string        `env:"UNIFI_PASSWORD"             envDefault:"unifi"`
@@ -27,7 +27,7 @@ func NewConfig(mqttCfg *mqttExtCfg.MQTTConfig) *Config {
 	c.MQTT = mqttCfg
 
 	if c.MQTT.ClientID == "" {
-		c.MQTT.ClientID = "DefaultUNIFI2MQTTClientID"
+		c.MQTT.ClientID = "DefaultUnifi2MqttClientID"
 	}
 
 	if c.MQTT.DiscoveryName == "" {
