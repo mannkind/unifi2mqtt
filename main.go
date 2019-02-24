@@ -8,12 +8,10 @@ import (
 var Version = "X.X.X"
 
 func main() {
-	log.Printf("unifi2mqtt Version: %s", Version)
+	log.Printf("Version: %s", Version)
 
 	x := Initialize()
 	if err := x.Run(); err != nil {
-		log.Panicf("Error starting collection lookup process: %s", err)
+		log.Panicf("Run Error: %s", err)
 	}
-
-	select {}
 }
