@@ -1,3 +1,5 @@
+github.com/adlio/darksky v0.0.0-20190219023837-63c8e8a7fabe h1:vueI3NMPUetp4LmVbOTeedUz9u7SPGrgcGRqAzSutY8=
+github.com/adlio/darksky v0.0.0-20190219023837-63c8e8a7fabe/go.mod h1:hmqB9YvxBpXHdQODW3y+wD3Q72jU/qR6OJZAiq9meyE=
 github.com/caarlos0/env v3.5.0+incompatible h1:Yy0UN8o9Wtr/jGHZDpCBLpNrzcFLLM2yixi/rBrKyJs=
 github.com/caarlos0/env v3.5.0+incompatible/go.mod h1:tdCsowwCzMLdkqRYDlHpZCp2UooDD3MspDBjZ2AD02Y=
 github.com/dim13/unifi v0.0.0-20180909201322-849b5234c16e h1:t2SCgbGub3trhIl1STfvXbOufHLqJ9F83Q9t+Fc/gdM=
@@ -12,6 +14,8 @@ github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:
 github.com/mannkind/paho.mqtt.golang.ext v0.1.0 h1:f/P0eiReHI9nOJxfBTM2Nxd5x91BpVNpBIKe5jByJII=
 github.com/mannkind/paho.mqtt.golang.ext v0.1.0/go.mod h1:/3IFyFHyEgDk3raBQrXcxDlNkh7tCji8GdiMJePPZOc=
 github.com/mdlayher/unifi v0.0.0-20180604180305-be73af8d7922/go.mod h1:j3FnKW2xGfTK2p6dxj4/ezMuUVx3BuewHu9cdgV+qZ0=
+github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
+github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 golang.org/x/arch v0.0.0-20181203225421-5a4828bb7045/go.mod h1:cYlCBUl1MsqxdiKgmc4uh7TxZfWSFLOGSRR090WDxt8=

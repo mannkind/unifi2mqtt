@@ -12,10 +12,12 @@ import (
 
 // Injectors from wire.go:
 
-func Initialize() *Unifi2Mqtt {
+func initialize() *bridge {
 	mqttConfig := cfg.NewMQTTConfig()
-	config := NewConfig(mqttConfig)
+	mainConfig := newConfig(mqttConfig)
 	mqttFuncWrapper := di.NewMQTTFuncWrapper()
-	unifi2Mqtt := NewUnifi2Mqtt(config, mqttFuncWrapper)
-	return unifi2Mqtt
+	mainMqttClient := newMQTTClient(mainConfig, mqttFuncWrapper)
+	mainClient := newClient(mainConfig)
+	mainBridge := newBridge(mainConfig, mainMqttClient, mainClient)
+	return mainBridge
 }
