@@ -12,7 +12,7 @@ BINARY_DATE=$(shell date -u '+%Y-%m-%d-%H%M UTC')
 BINARY_VERSION_FLAGS=-ldflags='-X "main.Version=$(BINARY_VERSION)" -X "main.BuildTime=$(BINARY_DATE)"'
 DOCKER_IMAGE=mannkind/unifi2mqtt
 DOCKER_ARCHS=amd64 arm32v6 arm64v8
-DOCKER_VERSION=latest
+DOCKER_VERSION=$(BINARY_VERSION)
 
 all: clean wire build test format vet
 test: 
