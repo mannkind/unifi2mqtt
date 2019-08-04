@@ -7,10 +7,10 @@ type event struct {
 }
 
 type observer interface {
-	receive(event)
+	receiveState(event)
+	receiveCommand(int64, event)
 }
 
 type publisher interface {
 	register(observer)
-	publish(event)
 }

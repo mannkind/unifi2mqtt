@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
 	"strings"
 	"time"
 
 	"github.com/dim13/unifi"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -68,29 +68,33 @@ func (c *client) register(l observer) {
 
 func (c *client) publish(e event) {
 	for o := range c.observers {
-		o.receive(e)
+		o.receiveState(e)
 	}
 }
 
 func (c *client) loop() {
-	log.Print("Connecting to Unifi")
+	log.Info("Connecting to Unifi")
 	u, err := unifi.Login(c.username, c.password, c.host, c.port, c.site, 5)
 	if err != nil {
-		log.Fatalf("Couldn't login to %s:%s with %s:<redacted>; %s", c.host, c.port, c.username, err)
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Couldn't login")
 		return
 	}
 	defer u.Logout()
-	log.Print("Connected to Unifi")
+	log.Info("Connected to Unifi")
 
-	log.Print("Selecting Site")
+	log.Info("Selecting Site")
 	site, err := u.Site(c.site)
 	if err != nil {
-		log.Fatalf("Couldn't find site %s; %s", c.site, err)
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Couldn't find site")
 		return
 	}
-	log.Print("Selected Site")
+	log.Info("Selected Site")
 
-	log.Print("Forever Fetching Clients")
+	log.Info("Forever Fetching Clients")
 	for {
 		// Default the status of all known macSlugMapping to not_home
 		for _, slug := range c.macSlugMapping {
@@ -98,20 +102,24 @@ func (c *client) loop() {
 		}
 
 		// Ask the unifi controller for all known clients
-		// log.Print("Fetching Clients")
+		log.Debug("Fetching Clients")
 		clients, err := u.Sta(site)
 		if err != nil {
-			log.Fatalf("Couldn't find clients; %s", err)
-			continue
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Error("Couldn't find any clients")
+			break
 		}
-		// log.Print("Fetched Clients")
+		log.Debug("Fetched Clients")
 
 		// Devices known to the controller will have their status set based on the Last Seen time
 		// Devices missing will remain defaulted to not_home
 		for _, client := range clients {
 			slug, ok := c.macSlugMapping[client.Mac]
 			if !ok {
-				// log.Printf("%s is not a device that is cared about", client.Mac)
+				log.WithFields(log.Fields{
+					"mac": client.Mac,
+				}).Debug("The device is not known nor cared about")
 				continue
 			}
 
