@@ -1,9 +1,17 @@
+dist: xenial
 language: go
 go:
   - "1.12"
 env:
-  - GO111MODULE=on
+  - GO111MODULE="on" DOCKER_CLI_EXPERIMENTAL="enabled"
+addons:
+  apt:
+    packages:
+      - docker-ce
+before_install:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - sudo docker run --privileged linuxkit/binfmt:v0.6
 script:
-  - make
+  - make docker docker-push
 after_success:
   - bash <(curl -s https://codecov.io/bash) -f /tmp/app.cover
