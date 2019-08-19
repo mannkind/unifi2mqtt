@@ -1,3 +1,7 @@
+BINARY_BASE_VERSION=0.6
+BINARY_NAME=unifi2mqtt
+DOCKER_IMAGE=mannkind/$(BINARY_NAME)
+
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
@@ -6,12 +10,10 @@ GOGET=$(GOCMD) get
 GOFMT=$(GOCMD) fmt
 GOVET=$(GOCMD) vet
 WIRECMD=wire gen
-BINARY_NAME=unifi2mqtt
-BINARY_VERSION=$(shell git describe --tags --always --dirty="-dev")
-BINARY_DATE=$(shell date -u '+%Y-%m-%d-%H%M UTC')
-BINARY_VERSION_FLAGS=-ldflags='-X "main.Version=$(BINARY_VERSION)" -X "main.BuildTime=$(BINARY_DATE)"'
-DOCKER_IMAGE=mannkind/$(BINARY_NAME)
-DOCKER_VERSION=$(BINARY_VERSION)
+BINARY_VERSION:=$(shell date +$(BINARY_BASE_VERSION).%y%j.%H%M)
+DOCKER_VERSION_ADDTL?=""
+BINARY_VERSION_FLAGS=-ldflags='-X "main.Version=$(BINARY_VERSION)"'
+DOCKER_VERSION?=$(BINARY_VERSION)$(DOCKER_VERSION_ADDTL)
 
 all: clean wire build test format vet
 test: 
