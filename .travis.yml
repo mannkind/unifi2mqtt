@@ -20,9 +20,6 @@ jobs:
       script:
         - make
         - make docker docker-push DOCKER_VERSION_ADDTL=-develop
-    - stage: deploy-image-latest
-      script:
-        - make docker docker-push DOCKER_VERSION=latest
     - stage: deploy-image
       script:
         - make
@@ -33,8 +30,6 @@ stages:
     if: type = pull_request
   - name: deploy-image-dev
     if: type = push AND branch != master
-  - name: deploy-image-latest
-    if: type = push AND branch = master
   - name: deploy-image
     if: type = push AND branch = master
 deploy:
