@@ -11,9 +11,13 @@ GOFMT=$(GOCMD) fmt
 GOVET=$(GOCMD) vet
 WIRECMD=wire gen
 BINARY_VERSION:=$(shell date +$(BINARY_BASE_VERSION).%y%j.%H%M)
-DOCKER_VERSION_ADDTL?=""
+DOCKER_VERSION_ADDTL?=
 BINARY_VERSION_FLAGS=-ldflags='-X "main.Version=$(BINARY_VERSION)"'
 DOCKER_VERSION?=$(BINARY_VERSION)$(DOCKER_VERSION_ADDTL)
+DOCKER_LATEST= latest
+ifdef DOCKER_VERSION_ADDTL
+	DOCKER_LATEST=
+endif
 
 all: clean wire build test format vet
 test: 
@@ -49,7 +53,7 @@ docker: clean
 	done
 
 docker-push:
-	for VERSION in $(DOCKER_VERSION) latest; do \
+	for VERSION in $(DOCKER_VERSION) $(DOCKER_LATEST); do \
 		docker push $(DOCKER_IMAGE):amd64-$${VERSION} && \
 		docker push $(DOCKER_IMAGE):arm32v6-$${VERSION} && \
 		docker push $(DOCKER_IMAGE):arm64v8-$${VERSION} && \
