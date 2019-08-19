@@ -1,3 +1,7 @@
+BINARY_BASE_VERSION=v0.6
+BINARY_NAME=unifi2mqtt
+DOCKER_IMAGE=mannkind/$(BINARY_NAME)
+
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
@@ -6,12 +10,14 @@ GOGET=$(GOCMD) get
 GOFMT=$(GOCMD) fmt
 GOVET=$(GOCMD) vet
 WIRECMD=wire gen
-BINARY_NAME=unifi2mqtt
-BINARY_VERSION=$(shell git describe --tags --always --dirty="-dev")
-BINARY_DATE=$(shell date -u '+%Y-%m-%d-%H%M UTC')
-BINARY_VERSION_FLAGS=-ldflags='-X "main.Version=$(BINARY_VERSION)" -X "main.BuildTime=$(BINARY_DATE)"'
-DOCKER_IMAGE=mannkind/$(BINARY_NAME)
-DOCKER_VERSION=$(BINARY_VERSION)
+BINARY_VERSION:=$(shell date +$(BINARY_BASE_VERSION).%y%j.%H%M)
+DOCKER_VERSION_ADDTL?=
+BINARY_VERSION_FLAGS=-ldflags='-X "main.Version=$(BINARY_VERSION)"'
+DOCKER_VERSION?=$(BINARY_VERSION)$(DOCKER_VERSION_ADDTL)
+DOCKER_LATEST= latest
+ifdef DOCKER_VERSION_ADDTL
+	DOCKER_LATEST=
+endif
 
 all: clean wire build test format vet
 test: 
@@ -42,19 +48,22 @@ docker: clean
 	  sed -i"" -e "s|__BASEIMAGE_ARCH__|$${arch}|g" Dockerfile.$${arch} && \
 	  sed -i"" -e "s|__GOLANG_ARCH__|$${golang_arch}|g" Dockerfile.$${arch} && \
 	  docker build --pull -f Dockerfile.$${arch} -t $(DOCKER_IMAGE):$${arch}-$(DOCKER_VERSION) . && \
+	  docker tag $(DOCKER_IMAGE):$${arch}-${DOCKER_VERSION} $(DOCKER_IMAGE):$${arch}-latest && \
 	  rm -f Dockerfile.$${arch}* ;\
 	done
 
 docker-push:
-	docker push $(DOCKER_IMAGE):amd64-$(DOCKER_VERSION) && \
-	docker push $(DOCKER_IMAGE):arm32v6-$(DOCKER_VERSION) && \
-	docker push $(DOCKER_IMAGE):arm64v8-$(DOCKER_VERSION) && \
-	docker manifest create $(DOCKER_IMAGE):$(DOCKER_VERSION) \
-		$(DOCKER_IMAGE):amd64-$(DOCKER_VERSION) \
-		$(DOCKER_IMAGE):arm32v6-$(DOCKER_VERSION) \
-		$(DOCKER_IMAGE):arm64v8-$(DOCKER_VERSION) && \
-	docker manifest annotate $(DOCKER_IMAGE):$(DOCKER_VERSION) \
-		$(DOCKER_IMAGE):arm32v6-$(DOCKER_VERSION) --os linux --arch arm --variant v6 && \
-	docker manifest annotate $(DOCKER_IMAGE):$(DOCKER_VERSION) \
-		$(DOCKER_IMAGE):arm64v8-$(DOCKER_VERSION) --os linux --arch arm64 --variant v8 && \
-	docker manifest push --purge $(DOCKER_IMAGE):$(DOCKER_VERSION) ;
+	for VERSION in $(DOCKER_VERSION) $(DOCKER_LATEST); do \
+		docker push $(DOCKER_IMAGE):amd64-$${VERSION} && \
+		docker push $(DOCKER_IMAGE):arm32v6-$${VERSION} && \
+		docker push $(DOCKER_IMAGE):arm64v8-$${VERSION} && \
+		docker manifest create $(DOCKER_IMAGE):$${VERSION} \
+			$(DOCKER_IMAGE):amd64-$${VERSION} \
+			$(DOCKER_IMAGE):arm32v6-$${VERSION} \
+			$(DOCKER_IMAGE):arm64v8-$${VERSION} && \
+		docker manifest annotate $(DOCKER_IMAGE):$${VERSION} \
+			$(DOCKER_IMAGE):arm32v6-$${VERSION} --os linux --arch arm --variant v6 && \
+		docker manifest annotate $(DOCKER_IMAGE):$${VERSION} \
+			$(DOCKER_IMAGE):arm64v8-$${VERSION} --os linux --arch arm64 --variant v8 && \
+		docker manifest push --purge $(DOCKER_IMAGE):$${VERSION} ;\
+	done

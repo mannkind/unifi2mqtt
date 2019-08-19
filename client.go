@@ -73,75 +73,77 @@ func (c *client) publish(e event) {
 }
 
 func (c *client) loop() {
-	log.Info("Connecting to Unifi")
-	u, err := unifi.Login(c.username, c.password, c.host, c.port, c.site, 5)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"error": err,
-		}).Fatal("Couldn't login")
-		return
-	}
-	defer u.Logout()
-	log.Info("Connected to Unifi")
-
-	log.Info("Selecting Site")
-	site, err := u.Site(c.site)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"error": err,
-		}).Fatal("Couldn't find site")
-		return
-	}
-	log.Info("Selected Site")
-
-	log.Info("Forever Fetching Clients")
 	for {
-		// Default the status of all known macSlugMapping to not_home
-		for _, slug := range c.macSlugMapping {
-			c.deviceStatus[slug] = notHome
-		}
-
-		// Ask the unifi controller for all known clients
-		log.Debug("Fetching Clients")
-		clients, err := u.Sta(site)
+		log.Info("Connecting to Unifi")
+		u, err := unifi.Login(c.username, c.password, c.host, c.port, c.site, 5)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"error": err,
-			}).Error("Couldn't find any clients")
-			break
+			}).Fatal("Couldn't login")
+			return
 		}
-		log.Debug("Fetched Clients")
+		defer u.Logout()
+		log.Info("Connected to Unifi")
 
-		// Devices known to the controller will have their status set based on the Last Seen time
-		// Devices missing will remain defaulted to not_home
-		for _, client := range clients {
-			slug, ok := c.macSlugMapping[client.Mac]
-			if !ok {
+		log.Info("Selecting Site")
+		site, err := u.Site(c.site)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Fatal("Couldn't find site")
+			return
+		}
+		log.Info("Selected Site")
+
+		log.Info("Forever Fetching Clients")
+		for {
+			// Default the status of all known macSlugMapping to not_home
+			for _, slug := range c.macSlugMapping {
+				c.deviceStatus[slug] = notHome
+			}
+
+			// Ask the unifi controller for all known clients
+			log.Debug("Fetching Clients")
+			clients, err := u.Sta(site)
+			if err != nil {
 				log.WithFields(log.Fields{
-					"mac": client.Mac,
-				}).Debug("The device is not known nor cared about")
-				continue
+					"error": err,
+				}).Error("Couldn't find any clients")
+				break
+			}
+			log.Debug("Fetched Clients")
+
+			// Devices known to the controller will have their status set based on the Last Seen time
+			// Devices missing will remain defaulted to not_home
+			for _, client := range clients {
+				slug, ok := c.macSlugMapping[client.Mac]
+				if !ok {
+					log.WithFields(log.Fields{
+						"mac": client.Mac,
+					}).Debug("The device is not known nor cared about")
+					continue
+				}
+
+				ts := time.Unix(int64(client.LastSeen), 0)
+				old := time.Since(ts) > c.awayTimeout
+				payload := home
+				if old {
+					payload = notHome
+				}
+
+				c.deviceStatus[slug] = payload
 			}
 
-			ts := time.Unix(int64(client.LastSeen), 0)
-			old := time.Since(ts) > c.awayTimeout
-			payload := home
-			if old {
-				payload = notHome
+			// Publish known device statuses
+			for slug, payload := range c.deviceStatus {
+				c.publish(event{
+					version: 1,
+					key:     slug,
+					data:    payload,
+				})
 			}
 
-			c.deviceStatus[slug] = payload
+			time.Sleep(c.lookupInterval)
 		}
-
-		// Publish known device statuses
-		for slug, payload := range c.deviceStatus {
-			c.publish(event{
-				version: 1,
-				key:     slug,
-				data:    payload,
-			})
-		}
-
-		time.Sleep(c.lookupInterval)
 	}
 }

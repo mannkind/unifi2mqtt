@@ -1,3 +1,5 @@
+if: tag IS blank # Don't build tags
+
 dist: xenial
 language: go
 go:
@@ -11,7 +13,27 @@ addons:
 before_install:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - sudo docker run --privileged linuxkit/binfmt:v0.6
-script:
-  - make docker docker-push
-after_success:
-  - bash <(curl -s https://codecov.io/bash) -f /tmp/app.cover
+jobs:
+  include:
+    - stage: test
+      script:
+        - make
+    - stage: deploy-image-dev
+      script:
+        - make
+        - make docker docker-push DOCKER_VERSION_ADDTL=-develop
+    - stage: deploy-image
+      script:
+        - make
+        - bash <(curl -s https://codecov.io/bash) -f /tmp/app.cover
+        - make docker docker-push
+stages:
+  - name: test
+    if: type = pull_request
+  - name: deploy-image-dev
+    if: type = push AND branch != master
+  - name: deploy-image
+    if: type = push AND branch = master
+deploy:
+  - provider: script
+    script: make docker docker-push
