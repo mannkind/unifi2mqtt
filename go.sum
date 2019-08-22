@@ -17,6 +17,8 @@ github.com/google/wire v0.3.0/go.mod h1:i1DMg/Lu8Sz5yYl25iOdmc5CT5qusaa+zmRWs167
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/mannkind/paho.mqtt.golang.ext v0.2.1 h1:KQEN3NyeKGknCg31Z5Cn200Yl271/BUKJPjOlGeQYtc=
 github.com/mannkind/paho.mqtt.golang.ext v0.2.1/go.mod h1:oU6yBf2os2KIejFve/xxOned6+nDhpFUiiYuEFbtPGU=
+github.com/mannkind/paho.mqtt.golang.ext v0.3.0 h1:CUNShYBCyDX+KV2tKKoCsNhXtxTsyhbpNI4Np4XSWAU=
+github.com/mannkind/paho.mqtt.golang.ext v0.3.0/go.mod h1:ZP4vhrmbRPgp3cxZdPUm4UglqSpTNvSv1tVuG/atuMs=
 github.com/mattn/go-colorable v0.1.2/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
