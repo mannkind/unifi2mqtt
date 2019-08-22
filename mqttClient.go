@@ -27,7 +27,7 @@ type mqttClient struct {
 	lastPublished  map[string]string
 }
 
-func newMQTTClient(config *config, mqttFuncWrapper *mqttExtDI.MQTTFuncWrapper) *mqttClient {
+func newMQTTClient(config *config, mqttFuncWrapper mqttExtDI.MQTTFuncWrapper) *mqttClient {
 	c := mqttClient{
 		discovery:       config.MQTT.Discovery,
 		discoveryPrefix: config.MQTT.DiscoveryPrefix,
@@ -50,17 +50,12 @@ func newMQTTClient(config *config, mqttFuncWrapper *mqttExtDI.MQTTFuncWrapper) *
 		c.macSlugMapping[deviceMacAddress] = deviceName
 	}
 
-	opts := mqttFuncWrapper.
-		ClientOptsFunc().
-		AddBroker(config.MQTT.Broker).
-		SetClientID(config.MQTT.ClientID).
-		SetOnConnectHandler(c.onConnect).
-		SetConnectionLostHandler(c.onDisconnect).
-		SetUsername(config.MQTT.Username).
-		SetPassword(config.MQTT.Password).
-		SetWill(c.availabilityTopic(), "offline", 0, true)
-
-	c.client = mqttFuncWrapper.ClientFunc(opts)
+	c.client = mqttFuncWrapper(
+		config.MQTT,
+		c.onConnect,
+		c.onDisconnect,
+		c.availabilityTopic(),
+	)
 
 	return &c
 }
