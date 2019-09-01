@@ -1,9 +1,9 @@
-config.yaml
 Dockerfile.amd64
 Dockerfile.arm32v6
 Dockerfile.arm64v8
-unifi2Mqtt
-/.GOPATH
-/bin
+Dockerfile.amd64-e
+Dockerfile.arm32v6-e
+Dockerfile.arm64v8-e
+*2mqtt
 /vendor
 .vscode

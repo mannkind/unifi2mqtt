@@ -1,56 +1,53 @@
 package main
 
 import (
-	"time"
+	"reflect"
 
-	"github.com/caarlos0/env"
-	mqttExtCfg "github.com/mannkind/paho.mqtt.golang.ext/cfg"
+	"github.com/caarlos0/env/v6"
+	"github.com/mannkind/twomqtt"
 	log "github.com/sirupsen/logrus"
 )
 
 type config struct {
-	MQTT           *mqttExtCfg.MQTTConfig
-	Host           string        `env:"UNIFI_HOST"                 envDefault:"unifi"`
-	Port           string        `env:"UNIFI_PORT"                 envDefault:"8443"`
-	Site           string        `env:"UNIFI_SITE"                 envDefault:"default"`
-	Username       string        `env:"UNIFI_USERNAME"             envDefault:"unifi"`
-	Password       string        `env:"UNIFI_PASSWORD"             envDefault:"unifi"`
-	AwayTimeout    time.Duration `env:"UNIFI_AWAYTIMEOUT"          envDefault:"5m"`
-	LookupInterval time.Duration `env:"UNIFI_LOOKUPINTERVAL"       envDefault:"10s"`
-	DeviceMapping  []string      `env:"UNIFI_DEVICEMAPPING"        envDefault:"11:22:33:44:55:66;MyPhone,12:23:34:45:56:67;AnotherPhone"`
-	DebugLogLevel  bool          `env:"UNIFI_DEBUG" envDefault:"false"`
+	GeneralConfig       twomqtt.GeneralConfig
+	GlobalClientConfig  globalClientConfig
+	MQTTClientConfig    mqttClientConfig
+	ServiceClientConfig serviceClientConfig
 }
 
-func newConfig(mqttCfg *mqttExtCfg.MQTTConfig) *config {
-	c := config{}
-	c.MQTT = mqttCfg
-	c.MQTT.Defaults("DefaultUnifi2MqttClientID", "unifi", "home/unifi")
+func newConfig() config {
+	c := config{
+		GeneralConfig:       twomqtt.GeneralConfig{},
+		GlobalClientConfig:  globalClientConfig{},
+		MQTTClientConfig:    mqttClientConfig{},
+		ServiceClientConfig: serviceClientConfig{},
+	}
 
-	if err := env.Parse(&c); err != nil {
+	// Manually parse the address:name mapping
+	if err := env.ParseWithFuncs(&c, map[reflect.Type]env.ParserFunc{
+		reflect.TypeOf(deviceMapping{}): twomqtt.SimpleKVMapParser(";", ","),
+	}); err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
 		}).Error("Unable to unmarshal configuration")
 	}
 
-	redactedPassword := ""
-	if len(c.Password) > 0 {
-		redactedPassword = "<REDACTED>"
+	// Defaults
+	if c.MQTTClientConfig.MQTTProxyConfig.DiscoveryName == "" {
+		c.MQTTClientConfig.MQTTProxyConfig.DiscoveryName = "unifi"
 	}
 
-	log.WithFields(log.Fields{
-		"Unifi.AwayTimeout":    c.AwayTimeout,
-		"Unifi.LookupInterval": c.LookupInterval,
-		"Unifi.Host":           c.Host,
-		"Unifi.Port":           c.Port,
-		"Unifi.Username":       c.Username,
-		"Unifi.Password":       redactedPassword,
-		"Unifi.DebugLogLevel":  c.DebugLogLevel,
-	}).Info("Environmental Settings")
+	if c.MQTTClientConfig.MQTTProxyConfig.TopicPrefix == "" {
+		c.MQTTClientConfig.MQTTProxyConfig.TopicPrefix = "home/unifi"
+	}
 
-	if c.DebugLogLevel {
+	// env.Parse* does not seem to work with embedded structs
+	c.MQTTClientConfig.Devices = c.GlobalClientConfig.Devices
+	c.ServiceClientConfig.Devices = c.GlobalClientConfig.Devices
+
+	if c.GeneralConfig.DebugLogLevel {
 		log.SetLevel(log.DebugLevel)
-		log.Debug("Enabling the debug log level")
 	}
 
-	return &c
+	return c
 }

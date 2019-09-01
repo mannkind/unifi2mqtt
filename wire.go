@@ -4,12 +4,20 @@ package main
 
 import (
 	"github.com/google/wire"
-	mqttExtCfg "github.com/mannkind/paho.mqtt.golang.ext/cfg"
-	mqttExtDI "github.com/mannkind/paho.mqtt.golang.ext/di"
+	"github.com/mannkind/twomqtt"
 )
 
 func initialize() *bridge {
-	wire.Build(mqttExtCfg.NewMQTTConfig, mqttExtDI.NewMQTTFuncWrapper, newConfig, newBridge, newMQTTClient, newClient)
+	wire.Build(
+		newBridge,
+		newMQTTClient,
+		newServiceClient,
+		newConfig,
+		wire.FieldsOf(new(config), "MQTTClientConfig"),
+		wire.FieldsOf(new(config), "ServiceClientConfig"),
+		wire.FieldsOf(new(mqttClientConfig), "MQTTProxyConfig"),
+		twomqtt.NewMQTTProxy,
+	)
 
 	return &bridge{}
 }

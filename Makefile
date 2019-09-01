@@ -1,4 +1,4 @@
-BINARY_BASE_VERSION=v0.6
+BINARY_BASE_VERSION=v0.7
 BINARY_NAME=unifi2mqtt
 DOCKER_IMAGE=mannkind/$(BINARY_NAME)
 
@@ -27,6 +27,7 @@ format:
 clean: 
 		$(GOCLEAN)
 		rm -f $(BINARY_NAME)
+		rm -f Dockerfile.a*
 vet:
 	    $(GOVET) .
 get_wire:
