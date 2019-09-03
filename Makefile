@@ -38,6 +38,11 @@ build: format
 		$(GOBUILD) $(BINARY_VERSION_FLAGS) -o $(BINARY_NAME) -v
 run: build
 		./$(BINARY_NAME)
+tag:
+		git tag -f $(BINARY_VERSION)
+tag-push: tag
+		sed -i -e "s/github.com/mannkind:$$GITHUB_TOKEN@github.com/g" .git/config
+		git push --tags
 docker: clean
 	for arch in amd64 arm32v6 arm64v8; do \
 		case $${arch} in \

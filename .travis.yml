@@ -26,7 +26,7 @@ jobs:
       script:
         - make
         - bash <(curl -s https://codecov.io/bash) -f /tmp/app.cover
-        - make docker docker-push
+        - make docker docker-push tag tag-push
 stages:
   - name: test
     if: type = pull_request
@@ -34,6 +34,3 @@ stages:
     if: type = push AND branch != master
   - name: deploy-image
     if: type = push AND branch = master
-deploy:
-  - provider: script
-    script: make docker docker-push
