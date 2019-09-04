@@ -3,7 +3,7 @@ if: tag IS blank # Don't build tags
 dist: xenial
 language: go
 go:
-  - "1.12"
+  - "1.13"
 env:
   - GO111MODULE="on" DOCKER_CLI_EXPERIMENTAL="enabled"
 addons:
