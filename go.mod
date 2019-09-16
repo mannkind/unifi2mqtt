@@ -5,7 +5,7 @@ require (
 	github.com/dim13/unifi v0.0.0-20190324114524-e97746adf746
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/google/wire v0.3.0
-	github.com/mannkind/twomqtt v0.2.0
+	github.com/mannkind/twomqtt v0.2.1
 	github.com/sirupsen/logrus v1.4.2
 )
 
