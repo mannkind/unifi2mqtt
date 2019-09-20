@@ -1,7 +1,6 @@
 package main
 
 import (
-	"reflect"
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -10,15 +9,16 @@ import (
 )
 
 type mqttClient struct {
-	twomqtt.StateObserver
-	*twomqtt.MQTTProxy
 	mqttClientConfig
+	*twomqtt.MQTTProxy
+	stateUpdateChan stateChannel
 }
 
-func newMQTTClient(mqttClientCfg mqttClientConfig, client *twomqtt.MQTTProxy) *mqttClient {
+func newMQTTClient(mqttClientCfg mqttClientConfig, client *twomqtt.MQTTProxy, stateUpdateChan stateChannel) *mqttClient {
 	c := mqttClient{
 		MQTTProxy:        client,
 		mqttClientConfig: mqttClientCfg,
+		stateUpdateChan:  stateUpdateChan,
 	}
 
 	c.Initialize(
@@ -33,6 +33,7 @@ func newMQTTClient(mqttClientCfg mqttClientConfig, client *twomqtt.MQTTProxy) *m
 
 func (c *mqttClient) run() {
 	c.Run()
+	go c.receive()
 }
 
 func (c *mqttClient) onConnect(client mqtt.Client) {
@@ -61,16 +62,13 @@ func (c *mqttClient) publishDiscovery() {
 	}
 }
 
-func (c *mqttClient) ReceiveState(e twomqtt.Event) {
-	if e.Type != reflect.TypeOf(unifiDevice{}) {
-		msg := "Unexpected event type; skipping"
-		log.WithFields(log.Fields{
-			"type": e.Type,
-		}).Error(msg)
-		return
+func (c *mqttClient) receive() {
+	for info := range c.stateUpdateChan {
+		c.receiveState(info)
 	}
+}
 
-	info := e.Payload.(unifiDevice)
+func (c *mqttClient) receiveState(info unifiDevice) {
 	topic := c.StateTopic("", info.name)
 
 	c.Publish(topic, info.state)

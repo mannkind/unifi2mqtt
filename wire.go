@@ -10,6 +10,7 @@ import (
 func initialize() *bridge {
 	wire.Build(
 		newBridge,
+		newStateChannel,
 		newMQTTClient,
 		newServiceClient,
 		newConfig,

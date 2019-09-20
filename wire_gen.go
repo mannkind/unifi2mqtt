@@ -16,9 +16,10 @@ func initialize() *bridge {
 	mainMqttClientConfig := mainConfig.MQTTClientConfig
 	mqttProxyConfig := mainMqttClientConfig.MQTTProxyConfig
 	mqttProxy := twomqtt.NewMQTTProxy(mqttProxyConfig)
-	mainMqttClient := newMQTTClient(mainMqttClientConfig, mqttProxy)
+	v := newStateChannel()
+	mainMqttClient := newMQTTClient(mainMqttClientConfig, mqttProxy, v)
 	mainServiceClientConfig := mainConfig.ServiceClientConfig
-	mainServiceClient := newServiceClient(mainServiceClientConfig)
+	mainServiceClient := newServiceClient(mainServiceClientConfig, v)
 	mainBridge := newBridge(mainMqttClient, mainServiceClient)
 	return mainBridge
 }

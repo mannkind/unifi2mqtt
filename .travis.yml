@@ -14,16 +14,16 @@ jobs:
   include:
     - stage: test
       script:
-        - make
+        - make test
     - stage: deploy-image-dev
       script:
-        - make
+        - make test
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - sudo docker run --privileged linuxkit/binfmt:v0.6
         - make docker docker-push DOCKER_VERSION_ADDTL=-develop
     - stage: deploy-image
       script:
-        - make
+        - make test
         - bash <(curl -s https://codecov.io/bash) -f /tmp/app.cover
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - sudo docker run --privileged linuxkit/binfmt:v0.6

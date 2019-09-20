@@ -1,11 +1,9 @@
 package main
 
 import (
-	"reflect"
 	"time"
 
 	"github.com/dim13/unifi"
-	"github.com/mannkind/twomqtt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,14 +13,15 @@ const (
 )
 
 type serviceClient struct {
-	twomqtt.StatePublisher
 	serviceClientConfig
-	deviceStatus map[string]string
+	stateUpdateChan stateChannel
+	deviceStatus    map[string]string
 }
 
-func newServiceClient(serviceClientCfg serviceClientConfig) *serviceClient {
+func newServiceClient(serviceClientCfg serviceClientConfig, stateUpdateChan stateChannel) *serviceClient {
 	c := serviceClient{
 		serviceClientConfig: serviceClientCfg,
+		stateUpdateChan:     stateUpdateChan,
 		deviceStatus:        map[string]string{},
 	}
 
@@ -112,12 +111,12 @@ func (c *serviceClient) loop() {
 
 			// Publish known device statuses
 			for name, state := range c.deviceStatus {
-				event, err := c.adapt(name, state)
+				obj, err := c.adapt(name, state)
 				if err != nil {
 					continue
 				}
 
-				c.SendState(event)
+				c.stateUpdateChan <- obj
 			}
 
 			log.WithFields(log.Fields{
@@ -128,7 +127,7 @@ func (c *serviceClient) loop() {
 	}
 }
 
-func (c *serviceClient) adapt(name string, state string) (twomqtt.Event, error) {
+func (c *serviceClient) adapt(name string, state string) (unifiDevice, error) {
 	log.WithFields(log.Fields{
 		"name":  name,
 		"state": state,
@@ -139,11 +138,6 @@ func (c *serviceClient) adapt(name string, state string) (twomqtt.Event, error) 
 		state: state,
 	}
 
-	event := twomqtt.Event{
-		Type:    reflect.TypeOf(obj),
-		Payload: obj,
-	}
-
 	log.Debug("Finished adapting name/state information")
-	return event, nil
+	return obj, nil
 }
