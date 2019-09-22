@@ -15,8 +15,6 @@ func newBridge(mqttClient *mqttClient, serviceClient *serviceClient) *bridge {
 }
 
 func (b *bridge) run() {
-	b.serviceClient.Register(b.mqttClient)
-
 	b.mqttClient.run()
 	b.serviceClient.run()
 }

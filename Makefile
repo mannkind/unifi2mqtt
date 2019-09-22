@@ -1,15 +1,7 @@
-BINARY_BASE_VERSION=v0.7
+BINARY_BASE_VERSION=v0.8
 BINARY_NAME=unifi2mqtt
 DOCKER_IMAGE=mannkind/$(BINARY_NAME)
 
-GOCMD=go
-GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
-GOFMT=$(GOCMD) fmt
-GOVET=$(GOCMD) vet
-WIRECMD=wire gen
 BINARY_VERSION:=$(shell date +$(BINARY_BASE_VERSION).%y%j.%H%M)
 DOCKER_VERSION_ADDTL?=
 BINARY_VERSION_FLAGS=-ldflags='-X "main.Version=$(BINARY_VERSION)"'
@@ -19,31 +11,31 @@ ifdef DOCKER_VERSION_ADDTL
 	DOCKER_LATEST=
 endif
 
-all: clean wire build test format vet
-test: 
-		$(GOTEST) --coverprofile=/tmp/app.cover -v ./...
-format:
-	    $(GOFMT) .
+all: wire format vet build test
 clean: 
-		$(GOCLEAN)
-		rm -f $(BINARY_NAME)
-		rm -f Dockerfile.a*
+	go clean
+	rm -f $(BINARY_NAME)
+	rm -f Dockerfile.a*
+format:
+	go fmt .
 vet:
-	    $(GOVET) .
+	go vet .
 get_wire:
-		$(GOGET) github.com/google/wire/cmd/wire
+	go get github.com/google/wire/cmd/wire
 wire: get_wire
-		$(WIRECMD)
-build: format
-		$(GOBUILD) $(BINARY_VERSION_FLAGS) -o $(BINARY_NAME) -v
+	wire gen
+build: 
+	go build $(BINARY_VERSION_FLAGS) -o $(BINARY_NAME) -v
+test: build
+	go test --coverprofile=/tmp/app.cover -v ./...
 run: build
-		./$(BINARY_NAME)
+	./$(BINARY_NAME)
 tag:
-		git tag -f $(BINARY_VERSION)
+	git tag -f $(BINARY_VERSION)
 tag-push: tag
-		sed -i -e "s/github.com/mannkind:$$GITHUB_TOKEN@github.com/g" .git/config
-		git push --tags
-docker: clean
+	sed -i -e "s/github.com/mannkind:$$GITHUB_TOKEN@github.com/g" .git/config
+	git push --tags
+docker: build clean
 	for arch in amd64 arm32v6 arm64v8; do \
 		case $${arch} in \
 			amd64   ) golang_arch="amd64";; \
@@ -57,8 +49,7 @@ docker: clean
 	  docker tag $(DOCKER_IMAGE):$${arch}-${DOCKER_VERSION} $(DOCKER_IMAGE):$${arch}-latest && \
 	  rm -f Dockerfile.$${arch}* ;\
 	done
-
-docker-push:
+docker-push: docker
 	for VERSION in $(DOCKER_VERSION) $(DOCKER_LATEST); do \
 		docker push $(DOCKER_IMAGE):amd64-$${VERSION} && \
 		docker push $(DOCKER_IMAGE):arm32v6-$${VERSION} && \
