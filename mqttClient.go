@@ -57,6 +57,8 @@ func (c *mqttClient) publishDiscovery() {
 		sensor := strings.ToLower(deviceName)
 		mqd := c.NewMQTTDiscovery("", sensor, "binary_sensor")
 		mqd.DeviceClass = "presence"
+		mqd.Device.Name = Name
+		mqd.Device.SWVersion = Version
 
 		c.PublishDiscovery(mqd)
 	}
