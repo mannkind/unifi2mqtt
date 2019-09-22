@@ -44,14 +44,14 @@ func TestDiscovery(t *testing.T) {
 			defaultDiscoveryName,
 			defaultTopicPrefix,
 			"homeassistant/binary_sensor/" + defaultDiscoveryName + "/" + knownMACName + "/config",
-			"{\"availability_topic\":\"" + defaultTopicPrefix + "/status\",\"device_class\":\"presence\",\"name\":\"" + defaultDiscoveryName + " " + knownMACName + "\",\"state_topic\":\"" + defaultTopicPrefix + "/" + knownMACName + "/state\",\"unique_id\":\"" + defaultDiscoveryName + "." + knownMACName + "\"}",
+			"{\"availability_topic\":\"" + defaultTopicPrefix + "/status\",\"device\":{\"identifiers\":[\"" + defaultTopicPrefix + "/status\"],\"manufacturer\":\"twomqtt\",\"name\":\"x2mqtt\",\"sw_version\":\"X.X.X\"},\"device_class\":\"presence\",\"name\":\"" + defaultDiscoveryName + " " + knownMACName + "\",\"state_topic\":\"" + defaultTopicPrefix + "/" + knownMACName + "/state\",\"unique_id\":\"" + defaultDiscoveryName + "." + knownMACName + "\"}",
 		},
 		{
 			knownMAC + ";" + knownMACName,
 			knownDiscoveryName,
 			knownTopicPrefix,
 			"homeassistant/binary_sensor/" + knownDiscoveryName + "/" + knownMACName + "/config",
-			"{\"availability_topic\":\"" + knownTopicPrefix + "/status\",\"device_class\":\"presence\",\"name\":\"" + knownDiscoveryName + " " + knownMACName + "\",\"state_topic\":\"" + knownTopicPrefix + "/" + knownMACName + "/state\",\"unique_id\":\"" + knownDiscoveryName + "." + knownMACName + "\"}",
+			"{\"availability_topic\":\"" + knownTopicPrefix + "/status\",\"device\":{\"identifiers\":[\"" + knownTopicPrefix + "/status\"],\"manufacturer\":\"twomqtt\",\"name\":\"x2mqtt\",\"sw_version\":\"X.X.X\"},\"device_class\":\"presence\",\"name\":\"" + knownDiscoveryName + " " + knownMACName + "\",\"state_topic\":\"" + knownTopicPrefix + "/" + knownMACName + "/state\",\"unique_id\":\"" + knownDiscoveryName + "." + knownMACName + "\"}",
 		},
 	}
 
