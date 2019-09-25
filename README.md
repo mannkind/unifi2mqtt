@@ -16,12 +16,12 @@ License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)]
 docker run -d --name="unifi2mqtt" -v /etc/localtime:/etc/localtime:ro mannkind/unifi2mqtt
 ```
 
-### Via Make
+### Via Mage
 
 ```bash
 git clone https://github.com/mannkind/unifi2mqtt
 cd unifi2mqtt
-make
+mage
 ./unifi2mqtt
 ```
 
