@@ -1,11 +1,13 @@
 FROM golang:1.13-alpine3.10 as build
-ENV GO111MODULE=on
-WORKDIR /go/src/app
+WORKDIR /app
 COPY . .
 RUN apk add --no-cache --update build-base git && \
-    GOOS=linux GOARCH=__GOLANG_ARCH__ make build
+    git clone https://github.com/magefile/mage && \
+    cd mage && go run bootstrap.go install && cd - && \
+    rm -rf mage && \
+    GOOS=linux GOARCH=__GOLANG_ARCH__ mage go:build
 
 FROM __BASEIMAGE_ARCH__/alpine:3.10
 RUN apk add --no-cache --update ca-certificates
-COPY --from=build /go/src/app/unifi2mqtt /usr/local/bin/unifi2mqtt
-CMD ["unifi2mqtt"]
+COPY --from=build /app/__BINARY_NAME__ /usr/local/bin/__BINARY_NAME__
+CMD ["__BINARY_NAME__"]
