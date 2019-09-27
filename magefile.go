@@ -40,6 +40,7 @@ func All() {
 	mg.SerialDeps(Go.Vet)
 	mg.SerialDeps(Go.Build)
 	mg.SerialDeps(Go.Test)
+	mg.SerialDeps(Go.Tidy)
 }
 
 // Remove the binary and architecture specific Dockerfiles
@@ -96,6 +97,14 @@ func (Go) Test() error {
 
 	fmt.Println("Testing")
 	return g0("test", "--coverprofile", "/tmp/app.cover", "-v", ".")
+}
+
+// Run the tidy command
+func (Go) Tidy() error {
+	mg.SerialDeps(Go.Build)
+
+	fmt.Println("Tidying")
+	return g0("mod", "tidy")
 }
 
 // Create a new tag for the git repository using the generated binary version

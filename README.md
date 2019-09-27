@@ -4,7 +4,7 @@ An experiment to publish device statuses from the Unifi Controller to MQTT.
 
 [![Software
 License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/mannkind/unifi2mqtt/blob/master/LICENSE.md)
-[![Travis CI](https://img.shields.io/travis/mannkind/unifi2mqtt/master.svg?style=flat-square)](https://travis-ci.org/mannkind/unifi2mqtt)
+[![Build Status](https://github.com/mannkind/unifi2mqtt/workflows/Main%20Workflow/badge.svg)](https://github.com/mannkind/unifi2mqtt/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/github/mannkind/unifi2mqtt/master.svg)](http://codecov.io/github/mannkind/unifi2mqtt?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mannkind/unifi2mqtt)](https://goreportcard.com/report/github.com/mannkind/unifi2mqtt)
 
