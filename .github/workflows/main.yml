@@ -1,0 +1,57 @@
+name: Main Workflow
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  all:
+    name: Build, Test, Deploy, Tag
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13
+
+      - name: Install Mage
+        run: |
+          mkdir -p $(go env GOPATH)/bin
+          git clone https://github.com/magefile/mage
+          cd mage
+          go run bootstrap.go install
+          cd - 
+          rm -rf mage
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v1
+
+      - name: Build and test application
+        run: |
+          export PATH=$(go env GOPATH)/bin:$PATH
+          mage -v go:test
+
+      - name: Upload code coverage data
+        run: bash <(curl -s https://codecov.io/bash) -f /tmp/app.cover
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Build and push the docker images
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_CLI_EXPERIMENTAL: "enabled"
+        run: |
+          export PATH=$(go env GOPATH)/bin:$PATH
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          sudo docker run --privileged linuxkit/binfmt:v0.6
+          mage -v docker:push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Tag and push the git release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          export PATH=$(go env GOPATH)/bin:$PATH
+          mage -v git:push
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
