@@ -1,5 +1,7 @@
 module github.com/mannkind/unifi2mqtt
 
+go 1.13
+
 require (
 	github.com/caarlos0/env/v6 v6.0.0
 	github.com/dim13/unifi v0.0.0-20190324114524-e97746adf746
