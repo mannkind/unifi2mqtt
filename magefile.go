@@ -62,7 +62,7 @@ func Clean() error {
 // Compile the application with the proper ldflags
 func (Go) Build() error {
 	fmt.Println("Building")
-	return g0("build", "-ldflags", "-X \"main.Version="+BinaryVersion+"\" -X \"main.Name="+BinaryName+"\"", "-o", BinaryName, ".")
+	return g0("build", "-trimpath", "-ldflags", "-X \"main.Version="+BinaryVersion+"\" -X \"main.Name="+BinaryName+"\"", "-o", BinaryName, ".")
 }
 
 // Ensure the code is formatted properly
