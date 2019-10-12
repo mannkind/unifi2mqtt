@@ -19,8 +19,8 @@ github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGi
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/magefile/mage v1.9.0 h1:t3AU2wNwehMCW97vuqQLtw6puppWXHO+O2MHo5a50XE=
 github.com/magefile/mage v1.9.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
-github.com/mannkind/twomqtt v0.3.2 h1:nWYjIoV0tmMGxzhak7f5UAGw6gOpbHk+Ap9wQlzJQjA=
-github.com/mannkind/twomqtt v0.3.2/go.mod h1:XdfxtckbeXej4mEMSgLbMfmZ5QHwlW88S4QVUgC2thI=
+github.com/mannkind/twomqtt v0.3.3 h1:8uW7y5ZhfyFUbLpK3aV/qdkD3aoYipU4zwMC+a9PV2c=
+github.com/mannkind/twomqtt v0.3.3/go.mod h1:iUkrXg+v3gKVlpQk67x2jIRO6kJdZFVfw7dT5EdFggU=
 github.com/mattn/go-colorable v0.1.2/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-isatty v0.0.8/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hdxcsrc5s=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
