@@ -12,6 +12,8 @@
     "--security-opt",
     "seccomp=unconfined",
     "-v",
+    "/Users/mannkind/Documents/Projects/homeautomation/twomqtt:/workspaces/twomqtt",
+    "-v",
     "${env:HOME}${env:USERPROFILE}/.ssh:/root/.ssh-localhost:ro"
   ],
   // Use 'settings' to set *default* container specific settings.json values on container create.
@@ -25,7 +27,9 @@
   // Uncomment the next line to run commands after the container is created.
   // "postCreateCommand": "go version",
   // Add the IDs of extensions you want installed when the container is created in the array below.
-  "extensions": ["ms-vscode.go"],
+  "extensions": [
+    "ms-vscode.go"
+  ],
   // Copy the contents to the correct location and set permissions
   "postCreateCommand": "mkdir -p ~/.ssh && cp -r ~/.ssh-localhost/* ~/.ssh && chmod 700 ~/.ssh && chmod 600 ~/.ssh/*"
 }

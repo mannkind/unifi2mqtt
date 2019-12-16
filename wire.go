@@ -7,18 +7,20 @@ import (
 	"github.com/mannkind/twomqtt"
 )
 
-func initialize() *bridge {
+func initialize() *app {
 	wire.Build(
-		newBridge,
+		newOpts,
+		newApp,
 		newStateChannel,
-		newMQTTClient,
-		newServiceClient,
-		newConfig,
-		wire.FieldsOf(new(config), "MQTTClientConfig"),
-		wire.FieldsOf(new(config), "ServiceClientConfig"),
-		wire.FieldsOf(new(mqttClientConfig), "MQTTProxyConfig"),
-		twomqtt.NewMQTTProxy,
+		newSink,
+		newSource,
+		wire.FieldsOf(new(stateChannel), "Input"),
+		wire.FieldsOf(new(stateChannel), "Output"),
+		wire.FieldsOf(new(opts), "Sink"),
+		wire.FieldsOf(new(opts), "Source"),
+		wire.FieldsOf(new(sinkOpts), "MQTTOpts"),
+		twomqtt.NewMQTT,
 	)
 
-	return &bridge{}
+	return &app{}
 }
