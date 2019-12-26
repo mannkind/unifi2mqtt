@@ -6,15 +6,15 @@ type app struct {
 }
 
 func newApp(src *source, snk *sink) *app {
-	bridge := app{
+	c := app{
 		sink:   snk,
 		source: src,
 	}
 
-	return &bridge
+	return &c
 }
 
-func (b *app) run() {
-	b.sink.run()
-	b.source.run()
+func (c *app) run() {
+	c.sink.run()
+	c.source.run()
 }
