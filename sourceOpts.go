@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-type serviceClientConfig struct {
-	globalClientConfig
+type sourceOpts struct {
+	globalOpts
 	Host           string        `env:"UNIFI_HOST"                 envDefault:"unifi"`
 	Port           string        `env:"UNIFI_PORT"                 envDefault:"8443"`
 	Site           string        `env:"UNIFI_SITE"                 envDefault:"default"`
