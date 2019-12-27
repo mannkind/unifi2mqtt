@@ -14,13 +14,13 @@ import (
 func initialize() *app {
 	mainOpts := newOpts()
 	mainSourceOpts := mainOpts.Source
-	mainStateChannel := newStateChannel()
-	v := mainStateChannel.output
+	mainComms := newComms()
+	v := mainComms.output
 	mainSource := newSource(mainSourceOpts, v)
 	mainSinkOpts := mainOpts.Sink
 	mqttOpts := mainSinkOpts.MQTTOpts
 	mqtt := twomqtt.NewMQTT(mqttOpts)
-	v2 := mainStateChannel.input
+	v2 := mainComms.input
 	mainSink := newSink(mqtt, mainSinkOpts, v2)
 	mainApp := newApp(mainSource, mainSink)
 	return mainApp

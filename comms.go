@@ -1,13 +1,13 @@
 package main
 
-type stateChannel struct {
+type comms struct {
 	input  <-chan sourceRep
 	output chan<- sourceRep
 }
 
-func newStateChannel() stateChannel {
+func newComms() comms {
 	c := make(chan sourceRep, 100)
-	return stateChannel{
+	return comms{
 		c,
 		c,
 	}
