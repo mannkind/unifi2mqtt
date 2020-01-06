@@ -97,12 +97,13 @@ func (c *source) poll() {
 	// Ask the unifi controller for all known clients
 	log.Debug("Fetching Clients")
 	clients, err := c.unifiClient.Sta(c.unifiSite)
-	if err != nil {
+	if err != nil || len(clients) == 0 {
 		c.unifiClient = nil
 		c.unifiSite = nil
 
 		log.WithFields(log.Fields{
-			"error": err,
+			"error":      err,
+			"numClients": len(clients),
 		}).Error("Couldn't find any clients")
 
 		return
