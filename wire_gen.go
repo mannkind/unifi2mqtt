@@ -7,21 +7,25 @@ package main
 
 import (
 	"github.com/mannkind/twomqtt"
+	"github.com/mannkind/unifi2mqtt/mqtt"
+	"github.com/mannkind/unifi2mqtt/shared"
+	"github.com/mannkind/unifi2mqtt/source"
 )
 
 // Injectors from wire.go:
 
 func initialize() *app {
-	mainOpts := newOpts()
-	mainSourceOpts := mainOpts.Source
-	mainComms := newComms()
-	v := mainComms.output
-	mainSource := newSource(mainSourceOpts, v)
-	mainSinkOpts := mainOpts.Sink
-	mqttOpts := mainSinkOpts.MQTTOpts
-	mqtt := twomqtt.NewMQTT(mqttOpts)
-	v2 := mainComms.input
-	mainSink := newSink(mqtt, mainSinkOpts, v2)
-	mainApp := newApp(mainSource, mainSink)
+	opts := shared.NewOpts()
+	sourceOpts := source.NewOpts(opts)
+	v := shared.NewRepresentationChannel()
+	v2 := shared.NewRepresentationChannelOutgoing(v)
+	service := source.NewService()
+	reader := source.NewReader(sourceOpts, v2, service)
+	mqttOpts := mqtt.NewOpts(opts)
+	twomqttMQTTOpts := mqttOpts.MQTTOpts
+	twomqttMQTT := twomqtt.NewMQTT(twomqttMQTTOpts)
+	v3 := shared.NewRepresentationChannelIncoming(v)
+	writer := mqtt.NewWriter(twomqttMQTT, mqttOpts, v3)
+	mainApp := newApp(reader, writer)
 	return mainApp
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/mannkind/unifi2mqtt/shared"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -11,14 +12,8 @@ func init() {
 	log.SetLevel(log.InfoLevel)
 }
 
-// Name - Set during compilation when using included Makefile
-var Name = "x2mqtt"
-
-// Version - Set during compilation when using included Makefile
-var Version = "X.X.X"
-
 func main() {
-	log.Infof("Version: %s", Version)
+	log.Infof("%s version: %s", shared.Name, shared.Version)
 
 	x := initialize()
 	x.run()
