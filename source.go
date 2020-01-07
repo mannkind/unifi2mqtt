@@ -20,6 +20,7 @@ type source struct {
 	unifiClient  *unifi.Unifi
 	unifiSite    *unifi.Site
 	deviceStatus map[string]string
+	deviceAwayTime map[string]time.Time
 }
 
 func newSource(config sourceOpts, outgoing chan<- sourceRep) *source {
@@ -27,6 +28,7 @@ func newSource(config sourceOpts, outgoing chan<- sourceRep) *source {
 		config:       config,
 		outgoing:     outgoing,
 		deviceStatus: map[string]string{},
+		deviceAwayTime: map[string]time.Time{},
 	}
 
 	return &c
@@ -97,13 +99,12 @@ func (c *source) poll() {
 	// Ask the unifi controller for all known clients
 	log.Debug("Fetching Clients")
 	clients, err := c.unifiClient.Sta(c.unifiSite)
-	if err != nil || len(clients) == 0 {
+	if err != nil {
 		c.unifiClient = nil
 		c.unifiSite = nil
 
 		log.WithFields(log.Fields{
 			"error":      err,
-			"numClients": len(clients),
 		}).Error("Couldn't find any clients")
 
 		return
@@ -120,12 +121,17 @@ func (c *source) poll() {
 			}).Debug("The device is not known nor cared about")
 			continue
 		}
+		
+		// Make up our own Last Seen value
+		// @NOTE(mannkind) It appears that we cannot trust client.LastSeen (anymore?)
+		c.deviceAwayTime[slug] = time.Now()
+	}
 
-		ts := time.Unix(int64(client.LastSeen), 0)
-		old := time.Since(ts) >= c.config.AwayTimeout
-		payload := home
-		if old {
-			payload = notHome
+	for _, slug := range c.opts.Devices {
+		payload := notHome
+		lastSeen, _ := c.deviceAwayTime[slug]
+		if time.Now().Sub(lastSeen) < c.opts.AwayTimeout {
+			payload = home
 		}
 
 		c.deviceStatus[slug] = payload
