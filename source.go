@@ -127,10 +127,10 @@ func (c *source) poll() {
 		c.deviceAwayTime[slug] = time.Now()
 	}
 
-	for _, slug := range c.opts.Devices {
+	for _, slug := range c.config.Devices {
 		payload := notHome
 		lastSeen, _ := c.deviceAwayTime[slug]
-		if time.Now().Sub(lastSeen) < c.opts.AwayTimeout {
+		if time.Now().Sub(lastSeen) < c.config.AwayTimeout {
 			payload = home
 		}
 
