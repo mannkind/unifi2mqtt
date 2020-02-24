@@ -1,33 +1,45 @@
 # unifi2mqtt
 
-An experiment to publish device statuses from the Unifi Controller to MQTT.
-
 [![Software
 License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/mannkind/unifi2mqtt/blob/master/LICENSE.md)
 [![Build Status](https://github.com/mannkind/unifi2mqtt/workflows/Main%20Workflow/badge.svg)](https://github.com/mannkind/unifi2mqtt/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/github/mannkind/unifi2mqtt/master.svg)](http://codecov.io/github/mannkind/unifi2mqtt?branch=master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mannkind/unifi2mqtt)](https://goreportcard.com/report/github.com/mannkind/unifi2mqtt)
 
-## Installation
+An experiment to publish device statuses from the Unifi Controller to MQTT.
 
-### Via Docker
+## Use
 
-```bash
-docker run -d --name="unifi2mqtt" -v /etc/localtime:/etc/localtime:ro mannkind/unifi2mqtt
-```
+The application can be locally built using `mage` or you can utilize the multi-architecture Docker image(s).
 
-### Via Mage
+### Example
 
 ```bash
-git clone https://github.com/mannkind/unifi2mqtt
-cd unifi2mqtt
-mage
-./unifi2mqtt
+docker run \
+-e UNIFI_HOST="unifi-controller.dns.name" \
+-e UNIFI_PORT="8443" \
+-e UNIFI_USERNAME="unifiUsername" \
+-e UNIFI_PASSWORD="unifiPassword" \
+-e UNIFI_DEVICEMAPPING="11:22:33:44:55:66;identifierSlug" \
+-e MQTT_BROKER="tcp://localhost:1883" \
+-e MQTT_DISCOVERY="true" \
+mannkind/unifi2mqtt:latest
 ```
 
-## Configuration
+OR
 
-Configuration happens via environmental variables
+```bash
+UNIFI_HOST="unifi-controller.dns.name" \
+UNIFI_PORT="8443" \
+UNIFI_USERNAME="unifiUsername" \
+UNIFI_PASSWORD="unifiPassword" \
+UNIFI_DEVICEMAPPING="11:22:33:44:55:66;identifierSlug" \
+MQTT_BROKER="tcp://localhost:1883" \
+MQTT_DISCOVERY="true" \
+./unifi2mqtt 
+```
+
+## Environment Variables
 
 ```bash
 UNIFI_HOST              - The hostname of the controller, defaults to "unifi.local"

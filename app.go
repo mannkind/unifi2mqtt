@@ -1,11 +1,16 @@
 package main
 
+import (
+	"github.com/mannkind/unifi2mqtt/mqtt"
+	"github.com/mannkind/unifi2mqtt/source"
+)
+
 type app struct {
-	source *source
-	sink   *sink
+	source *source.Reader
+	sink   *mqtt.Writer
 }
 
-func newApp(src *source, snk *sink) *app {
+func newApp(src *source.Reader, snk *mqtt.Writer) *app {
 	c := app{
 		sink:   snk,
 		source: src,
@@ -15,6 +20,6 @@ func newApp(src *source, snk *sink) *app {
 }
 
 func (c *app) run() {
-	c.sink.run()
-	c.source.run()
+	c.sink.Run()
+	c.source.Run()
 }
