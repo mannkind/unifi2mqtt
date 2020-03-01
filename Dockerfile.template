@@ -1,4 +1,4 @@
-FROM golang:1.13-alpine3.10 as build
+FROM golang:1.14-alpine3.11 as build
 WORKDIR /app
 COPY . .
 RUN apk add --no-cache --update build-base git && \
@@ -7,7 +7,7 @@ RUN apk add --no-cache --update build-base git && \
     rm -rf mage && \
     GOOS=linux GOARCH=__GOLANG_ARCH__ mage go:build
 
-FROM __BASEIMAGE_ARCH__/alpine:3.10
+FROM __BASEIMAGE_ARCH__/alpine:3.11
 RUN apk add --no-cache --update ca-certificates
 COPY --from=build /app/__BINARY_NAME__ /usr/local/bin/__BINARY_NAME__
 CMD ["__BINARY_NAME__"]
