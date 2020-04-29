@@ -4,58 +4,62 @@
 License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/mannkind/unifi2mqtt/blob/master/LICENSE.md)
 [![Build Status](https://github.com/mannkind/unifi2mqtt/workflows/Main%20Workflow/badge.svg)](https://github.com/mannkind/unifi2mqtt/actions)
 [![Coverage Status](https://img.shields.io/codecov/c/github/mannkind/unifi2mqtt/master.svg)](http://codecov.io/github/mannkind/unifi2mqtt?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mannkind/unifi2mqtt)](https://goreportcard.com/report/github.com/mannkind/unifi2mqtt)
 
 An experiment to publish device statuses from the Unifi Controller to MQTT.
 
 ## Use
 
-The application can be locally built using `mage` or you can utilize the multi-architecture Docker image(s).
+The application can be locally built using `dotnet build` or you can utilize the multi-architecture Docker image(s).
 
 ### Example
 
 ```bash
 docker run \
--e UNIFI_HOST="unifi-controller.dns.name" \
--e UNIFI_PORT="8443" \
--e UNIFI_USERNAME="unifiUsername" \
--e UNIFI_PASSWORD="unifiPassword" \
--e UNIFI_DEVICEMAPPING="11:22:33:44:55:66;identifierSlug" \
--e MQTT_BROKER="tcp://localhost:1883" \
--e MQTT_DISCOVERY="true" \
+-e UNIFI__HOST="https://unifi-controller.dns.name:8443" \
+-e UNIFI__USERNAME="unifiUsername" \
+-e UNIFI__PASSWORD="unifiPassword" \
+-e UNIFI__AWAYTIMEOUT="0.00:05:01" \
+-e UNIFI__RESOURCES__0__MACAddress="11:22:33:44:55:66" \
+-e UNIFI__RESOURCES__0__Slug="identifierSlug" \
 mannkind/unifi2mqtt:latest
 ```
 
 OR
 
 ```bash
-UNIFI_HOST="unifi-controller.dns.name" \
-UNIFI_PORT="8443" \
-UNIFI_USERNAME="unifiUsername" \
-UNIFI_PASSWORD="unifiPassword" \
-UNIFI_DEVICEMAPPING="11:22:33:44:55:66;identifierSlug" \
-MQTT_BROKER="tcp://localhost:1883" \
-MQTT_DISCOVERY="true" \
+UNIFI__HOST="https://unifi-controller.dns.name:8443" \
+UNIFI__USERNAME="unifiUsername" \
+UNIFI__PASSWORD="unifiPassword" \
+UNIFI__AWAYTIMEOUT="0.00:05:01" \
+UNIFI__RESOURCES__0__MACAddress="11:22:33:44:55:66" \
+UNIFI__RESOURCES__0__Slug="identifierSlug" \
 ./unifi2mqtt 
 ```
 
-## Environment Variables
+
+## Configuration
+
+Configuration happens via environmental variables
 
 ```bash
-UNIFI_HOST              - The hostname of the controller, defaults to "unifi.local"
-UNIFI_PORT              - The the port of the controller, defaults to "8443"
-UNIFI_SITE              - The site of the controller, defaults to "default"
-UNIFI_USERNAME          - The username used to access the controller, defaults to "unifi"
-UNIFI_PASSWORD          - The password used to access the controller, defaults to "unifi"
-UNIFI_AWAYTIMEOUT       - The timeout before marking a device as away, defaults to "5m"
-UNIFI_LOOKUPINTERVAL    - The interval to lookup devices on the controller, defaults to "10s"
-UNIFI_DEVICEMAPPING     - The map of mac addresses to names, defaults to "11:22:33:44:55:66;MyPhone,12:23:34:45:56:67;AnotherPhone"
-MQTT_TOPICPREFIX        - [OPTIONAL] The MQTT topic on which to publish the collection lookup results, defaults to "home/unifi"
-MQTT_DISCOVERY          - [OPTIONAL] The MQTT discovery flag for Home Assistant, defaults to false
-MQTT_DISCOVERYPREFIX    - [OPTIONAL] The MQTT discovery prefix for Home Assistant, defaults to "homeassistant"
-MQTT_DISCOVERYNAME      - [OPTIONAL] The MQTT discovery name for Home Assistant, defaults to "unifi"
-MQTT_CLIENTID           - [OPTIONAL] The clientId, defaults to ""
-MQTT_BROKER             - [OPTIONAL] The MQTT broker, defaults to "tcp://mosquitto.org:1883"
-MQTT_USERNAME           - [OPTIONAL] The MQTT username, default to ""
-MQTT_PASSWORD           - [OPTIONAL] The MQTT password, default to ""
+UNIFI__HOST                               - The Unifi Controller Host URL
+UNIFI__USERNAME                           - The Unifi Controller Username
+UNIFI__PASSWORD                           - The Unifi Controller Password
+UNIFI__AWAYTIMEOUT                        - [OPTIONAL] The delay between last seeing a device and marking it as away, defaults to "0.00:05:01"
+UNIFI__POLLINGINTERVAL                    - [OPTIONAL] The delay between device lookups, defaults to "0.00:00:11"
+UNIFI__RESOURCES__#__MACAddress           - The n-th iteration of a mac address for a specific device
+UNIFI__RESOURCES__#__Slug                 - The n-th iteration of a slug to identify the specific mac address
+UNIFI__MQTT__TOPICPREFIX                  - [OPTIONAL] The MQTT topic on which to publish the collection lookup results, defaults to "home/unifi"
+UNIFI__MQTT__DISCOVERYENABLED             - [OPTIONAL] The MQTT discovery flag for Home Assistant, defaults to false
+UNIFI__MQTT__DISCOVERYPREFIX              - [OPTIONAL] The MQTT discovery prefix for Home Assistant, defaults to "homeassistant"
+UNIFI__MQTT__DISCOVERYNAME                - [OPTIONAL] The MQTT discovery name for Home Assistant, defaults to "unifi"
+UNIFI__MQTT__BROKER                       - [OPTIONAL] The MQTT broker, defaults to "test.mosquitto.org"
+UNIFI__MQTT__USERNAME                     - [OPTIONAL] The MQTT username, default to ""
+UNIFI__MQTT__PASSWORD                     - [OPTIONAL] The MQTT password, default to ""
 ```
+
+## Prior Implementations
+
+### Golang
+* Last Commit: [c39d32c5d0721d32f8ebf089b796461f514b4d71](https://github.com/mannkind/unifi2mqtt/commit/c39d32c5d0721d32f8ebf089b796461f514b4d71)
+* Last Docker Image: [mannkind/unifi2mqtt:v0.8.20061.0158](https://hub.docker.com/layers/mannkind/unifi2mqtt/v0.8.20061.0158/images/sha256-7020736d44b64fe8b9cbc87887f20216b4539c32c9a5ae6145c10fe3c233b5bf?context=explore)
