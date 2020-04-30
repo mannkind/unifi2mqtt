@@ -73,7 +73,6 @@ namespace Unifi.Managers
                 {
                     var discovery = this.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
                     discovery.DeviceClass = "presence";
-                    discovery.Icon = "mdi:account";
 
                     tasks.Add(this.PublishDiscoveryAsync(input.Slug, map.Sensor, map.Type, discovery, cancellationToken));
                 }
