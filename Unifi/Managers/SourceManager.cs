@@ -28,24 +28,10 @@ namespace Unifi.Managers
             IOptions<Models.SourceManager.Opts> opts, ChannelWriter<Resource> outgoingData,
             ChannelReader<Command> incomingCommand,
             IHTTPSourceDAO<SlugMapping, Command, FetchResponse, object> sourceDAO) :
-            base(logger, outgoingData, incomingCommand, sharedOpts.Value.Resources, opts.Value.PollingInterval, sourceDAO)
+            base(logger, outgoingData, incomingCommand, sharedOpts.Value.Resources, opts.Value.PollingInterval,
+                sourceDAO, SourceSettings(sharedOpts.Value, opts.Value))
         {
-            this.Opts = opts.Value;
-            this.SharedOpts = sharedOpts.Value;
         }
-
-        /// <inheritdoc />
-        protected override void LogSettings() =>
-            this.Logger.LogInformation(
-                $"Host: {this.Opts.Host}\n" +
-                $"Username: {this.Opts.Username}\n" +
-                $"Password: {(!string.IsNullOrEmpty(this.Opts.Password) ? "<REDACTED>" : string.Empty)}\n" +
-                $"Site: {this.Opts.Site}\n" +
-                $"AwayTimeout: {this.Opts.AwayTimeout}\n" +
-                $"PollingInterval: {this.Opts.PollingInterval}\n" +
-                $"Resources: {string.Join(",", this.SharedOpts.Resources.Select(x => $"{x.MACAddress}:{x.Slug}"))}\n" +
-                $""
-            );
 
         /// <inheritdoc />
         protected override Resource MapResponse(FetchResponse src) =>
@@ -55,14 +41,14 @@ namespace Unifi.Managers
                 State = src.State,
             };
 
-        /// <summary>
-        /// The options for the source.
-        /// </summary>
-        private readonly Models.SourceManager.Opts Opts;
-
-        /// <summary>
-        /// The options that are shared.
-        /// </summary>
-        private readonly Models.Shared.Opts SharedOpts;
+        private static string SourceSettings(Models.Shared.Opts sharedOpts, Models.SourceManager.Opts opts) =>
+            $"Host: {opts.Host}\n" +
+            $"Username: {opts.Username}\n" +
+            $"Password: {(!string.IsNullOrEmpty(opts.Password) ? "<REDACTED>" : string.Empty)}\n" +
+            $"Site: {opts.Site}\n" +
+            $"AwayTimeout: {opts.AwayTimeout}\n" +
+            $"PollingInterval: {opts.PollingInterval}\n" +
+            $"Resources: {string.Join(",", sharedOpts.Resources.Select(x => $"{x.MACAddress}:{x.Slug}"))}\n" +
+            $"";
     }
 }
