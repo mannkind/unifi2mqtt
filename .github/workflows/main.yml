@@ -27,7 +27,7 @@ jobs:
         env:
           BUILD_APP: ${{ env.BUILD_APP }}
         run: |
-          dotnet build -c Release ${BUILD_APP}
+          dotnet build -c Release -o output ${BUILD_APP}
           dotnet test ${BUILD_APP}Test
           echo "::set-env name=BUILD_VERSION::$(./${BUILD_APP}/bin/Release/netcoreapp3.1/${BUILD_APP} -- version)"
 
@@ -36,16 +36,6 @@ jobs:
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
           version: latest
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
-
-      - name: Build various runtimes
-        env:
-          BUILD_APP: ${{ env.BUILD_APP }}
-          BUILD_VERSION: ${{ env.BUILD_VERSION }}
-        run: |
-          dotnet build -p:Version="${BUILD_VERSION/v/}" -c Release -o output/linux/amd64 -r linux-x64 ${BUILD_APP}
-          dotnet build -p:Version="${BUILD_VERSION/v/}" -c Release -o output/linux/arm64 -r linux-arm64 ${BUILD_APP}
-          dotnet build -p:Version="${BUILD_VERSION/v/}" -c Release -o output/linux/arm/v7 -r linux-arm ${BUILD_APP}
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
 
       - name: Build/Push Docker Images (Master)
