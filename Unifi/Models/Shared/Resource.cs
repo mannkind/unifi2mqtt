@@ -16,5 +16,8 @@ namespace Unifi.Models.Shared
         /// </summary>
         /// <value></value>
         public bool State { get; set; } = false;
+
+        /// <inheritdoc />
+        public override string ToString() => $"Mac: {this.Mac}; State: {this.State}";
     }
 }

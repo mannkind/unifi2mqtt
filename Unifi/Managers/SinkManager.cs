@@ -41,15 +41,18 @@ namespace Unifi.Managers
                 .Select(x => x.Slug)
                 .FirstOrDefault() ?? string.Empty;
 
+            this.Logger.LogDebug($"Found slug {slug} for incoming data for {input.Mac}");
             if (string.IsNullOrEmpty(slug))
             {
+                this.Logger.LogDebug($"Unable to find slug for {input.Mac}");
                 return;
             }
 
+            this.Logger.LogDebug($"Started publishing data for slug {slug}");
             await Task.WhenAll(
                 this.PublishAsync(this.StateTopic(slug), this.BooleanOnOff(input.State))
             );
-
+            this.Logger.LogDebug($"Finished publishing data for slug {slug}");
         }
 
         /// <inheritdoc />
@@ -71,6 +74,7 @@ namespace Unifi.Managers
             {
                 foreach (var map in mapping)
                 {
+                    this.Logger.LogDebug($"Generating discovery for {input.MACAddress} - {map.Sensor}");
                     var discovery = this.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
                     discovery.DeviceClass = "presence";
 
