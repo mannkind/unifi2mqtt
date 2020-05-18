@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using KoenZomers.UniFi.Api;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TwoMQTT.Core;
 using TwoMQTT.Core.DataAccess;
 using TwoMQTT.Core.Extensions;
@@ -32,12 +36,25 @@ namespace Unifi
 
             services.AddMemoryCache();
             services.AddHttpClient<IHTTPSourceDAO<SlugMapping, Command, Models.SourceManager.FetchResponse, object>>();
-            services.AddTransient<IHTTPSourceDAO<SlugMapping, Command, Models.SourceManager.FetchResponse, object>, SourceDAO>();
 
             return services
+                .AddMemoryCache()
                 .Configure<Models.Shared.Opts>(sharedSect)
                 .Configure<Models.SourceManager.Opts>(sourceSect)
                 .Configure<Models.SinkManager.Opts>(sinkSect)
+                .AddTransient<Api>(x =>
+                {
+                    var opts = x.GetService<IOptions<Models.SourceManager.Opts>>();
+                    return new Api(new Uri(opts.Value.Host));
+                })
+                .AddTransient<IHTTPSourceDAO<SlugMapping, Command, Models.SourceManager.FetchResponse, object>>(x =>
+                {
+                    var opts = x.GetService<IOptions<Models.SourceManager.Opts>>();
+                    return new SourceDAO(
+                        x.GetService<ILogger<SourceDAO>>(), x.GetService<IHttpClientFactory>(), x.GetService<IMemoryCache>(),
+                        x.GetService<Api>(), opts.Value.Username, opts.Value.Password, opts.Value.AwayTimeout
+                    );
+                })
                 .ConfigureBidirectionalSourceSink<Resource, Command, SourceManager, SinkManager>();
         }
 

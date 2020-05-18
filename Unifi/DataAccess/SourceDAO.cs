@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using KoenZomers.UniFi.Api;
 using Newtonsoft.Json;
@@ -25,19 +24,21 @@ namespace Unifi.DataAccess
         /// Initializes a new instance of the SourceDAO class.
         /// </summary>
         /// <param name="logger"></param>
-        /// <param name="opts"></param>
         /// <param name="httpClientFactory"></param>
         /// <param name="cache"></param>
+        /// <param name="unifiClient"></param>
+        /// <param name="username"></param>
+        /// <param name="password"></param>
+        /// <param name="awayTimeout"></param>
         /// <returns></returns>
-        public SourceDAO(ILogger<SourceDAO> logger, IOptions<Models.SourceManager.Opts> opts,
-            IHttpClientFactory httpClientFactory, IMemoryCache cache) :
+        public SourceDAO(ILogger<SourceDAO> logger, IHttpClientFactory httpClientFactory, IMemoryCache cache, Api unifiClient, string username, string password, TimeSpan awayTimeout) :
             base(logger, httpClientFactory)
         {
             this.Cache = cache;
-            this.Username = opts.Value.Username;
-            this.Password = opts.Value.Password;
-            this.AwayTimeout = opts.Value.AwayTimeout;
-            this.UnifiClient = new Api(new Uri(opts.Value.Host));
+            this.Username = username;
+            this.Password = password;
+            this.AwayTimeout = awayTimeout;
+            this.UnifiClient = unifiClient;
             this.UnifiClient.DisableSslValidation();
         }
 
