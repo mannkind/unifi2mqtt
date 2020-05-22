@@ -5,11 +5,11 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
-    <RestoreSources>$(RestoreSources);../vendor;https://api.nuget.org/v3/index.json</RestoreSources>
+    <RestoreSources>$(RestoreSources);https://api.nuget.org/v3/index.json</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="twomqtt" Version="0.5.*" />
+    <PackageReference Include="twomqtt" Version="0.5.20143.16240-dev" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
     <PackageReference Include="KoenZomers.UniFi.Api" Version="1.1.*" />
   </ItemGroup>
