@@ -18,21 +18,20 @@ namespace Unifi.DataAccess
     /// <summary>
     /// An class representing a managed way to interact with a source.
     /// </summary>
-    public class SourceDAO : HTTPSourceDAO<SlugMapping, Command, Models.SourceManager.FetchResponse, object>
+    public class SourceDAO : SourceDAO<SlugMapping, Command, Models.SourceManager.FetchResponse, object>
     {
         /// <summary>
         /// Initializes a new instance of the SourceDAO class.
         /// </summary>
         /// <param name="logger"></param>
-        /// <param name="httpClientFactory"></param>
         /// <param name="cache"></param>
         /// <param name="unifiClient"></param>
         /// <param name="username"></param>
         /// <param name="password"></param>
         /// <param name="awayTimeout"></param>
         /// <returns></returns>
-        public SourceDAO(ILogger<SourceDAO> logger, IHttpClientFactory httpClientFactory, IMemoryCache cache, Api unifiClient, string username, string password, TimeSpan awayTimeout) :
-            base(logger, httpClientFactory)
+        public SourceDAO(ILogger<SourceDAO> logger, IMemoryCache cache, Api unifiClient, string username, string password, TimeSpan awayTimeout) :
+            base(logger)
         {
             this.Cache = cache;
             this.Username = username;
