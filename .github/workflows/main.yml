@@ -1,8 +1,6 @@
 name: Main Workflow
 on:
   push:
-    branches:
-      - master
   pull_request:
 jobs:
   all:
@@ -10,48 +8,66 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.14
+      - uses: rlespinasse/github-slug-action@master
 
-      - name: Install Mage
+      - name: Setup specific variables
         run: |
-          mkdir -p $(go env GOPATH)/bin
-          git clone https://github.com/magefile/mage
-          cd mage
-          go run bootstrap.go install
-          cd - 
-          rm -rf mage
+          echo "::set-env name=DOCKER_IMAGE::mannkind/unifi2mqtt"
+          echo "::set-env name=BUILD_APP::Unifi"
 
-      - name: Check out code into the Go module directory
+      - name: Set up dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.201'
+
+      - name: Check out code
         uses: actions/checkout@v1
 
       - name: Build and test application
+        env:
+          BUILD_APP: ${{ env.BUILD_APP }}
         run: |
-          export PATH=$(go env GOPATH)/bin:$PATH
-          mage -v go:test
+          dotnet build -c Release -o output ${BUILD_APP}
+          dotnet test ${BUILD_APP}Test
+          echo "::set-env name=BUILD_VERSION::$(./output/${BUILD_APP} -- version)"
 
-      - name: Upload code coverage data
-        run: bash <(curl -s https://codecov.io/bash) -f /tmp/app.cover
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
 
-      - name: Build and push the docker images
+      - name: Build/Push Docker Images (Master)
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_CLI_EXPERIMENTAL: "enabled"
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
+          BUILD_VERSION: ${{ env.BUILD_VERSION }}
         run: |
-          export PATH=$(go env GOPATH)/bin:$PATH
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-          sudo docker run --privileged linuxkit/binfmt:v0.6
-          mage -v docker:push
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:latest" .
+          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:${BUILD_VERSION}" .
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
       - name: Tag and push the git release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_VERSION: ${{ env.BUILD_VERSION }}
         run: |
-          export PATH=$(go env GOPATH)/bin:$PATH
-          mage -v git:push
+          git tag -f $BUILD_VERSION
+          sed -i -e "s/github.com/mannkind:${GITHUB_TOKEN}@github.com/g" .git/config
+          git push --tags
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Build/Push Docker Images (Non-Master)
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_CLI_EXPERIMENTAL: "enabled"
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:dev" .
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
