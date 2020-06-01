@@ -18,7 +18,7 @@ jobs:
       - name: Set up dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.100' # SDK Version to use.
+          dotnet-version: '3.1.201'
 
       - name: Check out code
         uses: actions/checkout@v1
@@ -29,7 +29,7 @@ jobs:
         run: |
           dotnet build -c Release -o output ${BUILD_APP}
           dotnet test ${BUILD_APP}Test
-          echo "::set-env name=BUILD_VERSION::$(./${BUILD_APP}/bin/Release/netcoreapp3.1/${BUILD_APP} -- version)"
+          echo "::set-env name=BUILD_VERSION::$(./output/${BUILD_APP} -- version)"
 
       - name: Set up Docker Buildx
         id: buildx
@@ -57,7 +57,7 @@ jobs:
           BUILD_VERSION: ${{ env.BUILD_VERSION }}
         run: |
           git tag -f $BUILD_VERSION
-          sed -i -e "s/github.com/mannkind:${GITHUB_TOKEN}@github.com/g" git/config
+          sed -i -e "s/github.com/mannkind:${GITHUB_TOKEN}@github.com/g" .git/config
           git push --tags
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
