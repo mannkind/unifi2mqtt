@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="twomqtt" Version="0.5.20143.16240-dev" />
+    <PackageReference Include="twomqtt" Version="0.5.*" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
     <PackageReference Include="KoenZomers.UniFi.Api" Version="1.1.*" />
   </ItemGroup>
