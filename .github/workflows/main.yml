@@ -28,7 +28,8 @@ jobs:
           BUILD_APP: ${{ env.BUILD_APP }}
         run: |
           dotnet build -c Release -o output ${BUILD_APP}
-          dotnet test ${BUILD_APP}Test
+          dotnet test --collect:"XPlat Code Coverage" ${BUILD_APP}Test
+          bash <(curl -s https://codecov.io/bash)
           echo "::set-env name=BUILD_VERSION::$(./output/${BUILD_APP} -- version)"
 
       - name: Set up Docker Buildx
