@@ -8,36 +8,37 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Extensions.ManagedClient;
 using TwoMQTT.Core;
+using TwoMQTT.Core.Interfaces;
 using TwoMQTT.Core.Managers;
 using TwoMQTT.Core.Models;
+using TwoMQTT.Core.Utils;
+using Unifi.Models.Options;
 using Unifi.Models.Shared;
 
 namespace Unifi.Managers
 {
     /// <summary>
-    /// An class representing a managed way to interact with a sink.
+    /// An class representing a managed way to interact with MQTT.
     /// </summary>
-    public class SinkManager : MQTTManager<SlugMapping, Resource, Command>
+    public class MQTTLiason : IMQTTLiason<Resource, Command>
     {
         /// <summary>
-        /// Initializes a new instance of the SinkManager class.
+        /// Initializes a new instance of the MQTTLiason class.
         /// </summary>
         /// <param name="logger"></param>
+        /// <param name="generator"></param>
         /// <param name="sharedOpts"></param>
-        /// <param name="opts"></param>
-        /// <param name="incomingData"></param>
-        /// <param name="outgoingCommand"></param>
-        /// <returns></returns>
-        public SinkManager(ILogger<SinkManager> logger, IOptions<Opts> sharedOpts, IOptions<Models.SinkManager.Opts> opts,
-            IManagedMqttClient client, ChannelReader<Resource> incomingData, ChannelWriter<Command> outgoingCommand) :
-            base(logger, opts, client, incomingData, outgoingCommand, sharedOpts.Value.Resources, string.Empty)
+        public MQTTLiason(ILogger<MQTTLiason> logger, IMQTTGenerator generator, IOptions<SharedOpts> sharedOpts)
         {
+            this.Logger = logger;
+            this.Generator = generator;
+            this.Questions = sharedOpts.Value.Resources;
         }
 
         /// <inheritdoc />
-        protected override async Task HandleIncomingDataAsync(Resource input,
-            CancellationToken cancellationToken = default)
+        public IEnumerable<(string topic, string payload)> MapData(Resource input)
         {
+            var results = new List<(string, string)>();
             var slug = this.Questions
                 .Where(x => x.MACAddress == input.Mac)
                 .Select(x => x.Slug)
@@ -46,21 +47,21 @@ namespace Unifi.Managers
             if (string.IsNullOrEmpty(slug))
             {
                 this.Logger.LogDebug($"Unable to find slug for {input.Mac}");
-                return;
+                return results;
             }
 
             this.Logger.LogDebug($"Found slug {slug} for incoming data for {input.Mac}");
-            this.Logger.LogDebug($"Started publishing data for slug {slug}");
-            var publish = new[]
-            {
-                (this.StateTopic(slug), this.BooleanOnOff(input.State)),
-            };
-            this.PublishAsync(publish, cancellationToken);
-            this.Logger.LogDebug($"Finished publishing data for slug {slug}");
+            results.AddRange(new[]
+                {
+                    (this.Generator.StateTopic(slug), this.Generator.BooleanOnOff(input.State)),
+                }
+            );
+
+            return results;
         }
 
         /// <inheritdoc />
-        protected override IEnumerable<(string slug, string sensor, string type, MQTTDiscovery discovery)> Discoveries()
+        public IEnumerable<(string slug, string sensor, string type, MQTTDiscovery discovery)> Discoveries()
         {
             var discoveries = new List<(string, string, string, MQTTDiscovery)>();
             var assembly = Assembly.GetAssembly(typeof(Program))?.GetName() ?? new AssemblyName();
@@ -74,7 +75,7 @@ namespace Unifi.Managers
                 foreach (var map in mapping)
                 {
                     this.Logger.LogDebug($"Generating discovery for {input.MACAddress} - {map.Sensor}");
-                    var discovery = this.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
+                    var discovery = this.Generator.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
                     discovery.DeviceClass = "presence";
 
                     discoveries.Add((input.Slug, map.Sensor, map.Type, discovery));
@@ -83,5 +84,20 @@ namespace Unifi.Managers
 
             return discoveries;
         }
+
+        /// <summary>
+        /// The logger used internally.
+        /// </summary>
+        private readonly ILogger<MQTTLiason> Logger;
+
+        /// <summary>
+        /// The questions to ask the source (typically some kind of key/slug pairing).
+        /// </summary>
+        private readonly List<SlugMapping> Questions;
+
+        /// <summary>
+        /// The MQTT generator used for things such as availability topic, state topic, command topic, etc.
+        /// </summary>
+        private readonly IMQTTGenerator Generator;
     }
 }

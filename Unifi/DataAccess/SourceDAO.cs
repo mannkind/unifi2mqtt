@@ -10,15 +10,26 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using KoenZomers.UniFi.Api;
 using Newtonsoft.Json;
-using TwoMQTT.Core.DataAccess;
 using Unifi.Models.Shared;
+using Unifi.Models.Source;
 
 namespace Unifi.DataAccess
 {
+    public interface ISourceDAO
+    {
+        /// <summary>
+        /// Fetch one response from the source.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<FetchResponse?> FetchOneAsync(SlugMapping data, CancellationToken cancellationToken = default);
+    }
+
     /// <summary>
     /// An class representing a managed way to interact with a source.
     /// </summary>
-    public class SourceDAO : SourceDAO<SlugMapping, Command, Models.SourceManager.FetchResponse, object>
+    public class SourceDAO : ISourceDAO
     {
         /// <summary>
         /// Initializes a new instance of the SourceDAO class.
@@ -30,9 +41,9 @@ namespace Unifi.DataAccess
         /// <param name="password"></param>
         /// <param name="awayTimeout"></param>
         /// <returns></returns>
-        public SourceDAO(ILogger<SourceDAO> logger, IMemoryCache cache, Api unifiClient, string username, string password, TimeSpan awayTimeout) :
-            base(logger)
+        public SourceDAO(ILogger<SourceDAO> logger, IMemoryCache cache, Api unifiClient, string username, string password, TimeSpan awayTimeout)
         {
+            this.Logger = logger;
             this.Cache = cache;
             this.Username = username;
             this.Password = password;
@@ -42,7 +53,7 @@ namespace Unifi.DataAccess
         }
 
         /// <inheritdoc />
-        public override async Task<Models.SourceManager.FetchResponse?> FetchOneAsync(SlugMapping data,
+        public async Task<FetchResponse?> FetchOneAsync(SlugMapping data,
             CancellationToken cancellationToken = default)
         {
             try
@@ -59,6 +70,11 @@ namespace Unifi.DataAccess
                 return null;
             }
         }
+
+        /// <summary>
+        /// The logger used internally.
+        /// </summary>
+        private readonly ILogger<SourceDAO> Logger;
 
         /// <summary>
         /// The internal cache.
@@ -104,12 +120,17 @@ namespace Unifi.DataAccess
         private readonly ConcurrentDictionary<string, DateTime> LastSeen = new ConcurrentDictionary<string, DateTime>();
 
         /// <summary>
+        /// 
+        /// </summary>
+        private const string ACTIVECLIENTS = "CLIENTS";
+
+        /// <summary>
         /// Fetch one response from the source
         /// </summary>
         /// <param name="data"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task<Models.SourceManager.FetchResponse?> FetchAsync(string macAddress,
+        private async Task<FetchResponse?> FetchAsync(string macAddress,
             CancellationToken cancellationToken = default)
         {
             this.Logger.LogDebug($"Started finding {macAddress} from Unifi");
@@ -132,7 +153,7 @@ namespace Unifi.DataAccess
                 dt = this.LastSeen[macAddress];
             }
 
-            return new Models.SourceManager.FetchResponse
+            return new FetchResponse
             {
                 MACAddress = macAddress,
                 State = dt > (DateTime.Now - this.AwayTimeout),
@@ -178,7 +199,5 @@ namespace Unifi.DataAccess
                 this.ClientsSemaphore.Release();
             }
         }
-
-        private const string ACTIVECLIENTS = "CLIENTS";
     }
 }
