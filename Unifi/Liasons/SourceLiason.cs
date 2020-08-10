@@ -11,7 +11,7 @@ using Unifi.DataAccess;
 using Unifi.Models.Shared;
 using Unifi.Models.Source;
 
-namespace Unifi.Managers
+namespace Unifi.Liasons
 {
     /// <summary>
     /// A class representing a managed way to interact with a source.
@@ -26,14 +26,21 @@ namespace Unifi.Managers
             this.Questions = sharedOpts.Value.Resources;
 
             this.Logger.LogInformation(
-                $"Host: {opts.Value.Host}\n" +
-                $"Username: {opts.Value.Username}\n" +
-                $"Password: {(!string.IsNullOrEmpty(opts.Value.Password) ? "<REDACTED>" : string.Empty)}\n" +
-                $"Site: {opts.Value.Site}\n" +
-                $"AwayTimeout: {opts.Value.AwayTimeout}\n" +
-                $"PollingInterval: {opts.Value.PollingInterval}\n" +
-                $"Resources: {string.Join(",", sharedOpts.Value.Resources.Select(x => $"{x.MACAddress}:{x.Slug}"))}\n" +
-                $""
+                "Host: {host}\n" +
+                "Username: {username}\n" +
+                "Password: {password}\n" +
+                "Site: {site}\n" +
+                "AwayTimeout: {awayTimeout}\n" +
+                "PollingInterval: {pollingInterval}\n" +
+                "Resources: {@resources}\n" +
+                "",
+                opts.Value.Host,
+                opts.Value.Username,
+                (!string.IsNullOrEmpty(opts.Value.Password) ? "<REDACTED>" : string.Empty),
+                opts.Value.Site,
+                opts.Value.AwayTimeout,
+                opts.Value.PollingInterval,
+                sharedOpts.Value.Resources
             );
         }
 
@@ -42,7 +49,7 @@ namespace Unifi.Managers
         {
             foreach (var key in this.Questions)
             {
-                this.Logger.LogDebug($"Looking up {key}");
+                this.Logger.LogDebug("Looking up {key}", key);
                 var result = await this.SourceDAO.FetchOneAsync(key, cancellationToken);
                 var resp = result != null ? this.MapData(result) : null;
                 yield return resp;
