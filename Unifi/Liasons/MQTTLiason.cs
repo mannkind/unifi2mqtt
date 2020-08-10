@@ -15,7 +15,7 @@ using TwoMQTT.Core.Utils;
 using Unifi.Models.Options;
 using Unifi.Models.Shared;
 
-namespace Unifi.Managers
+namespace Unifi.Liasons
 {
     /// <summary>
     /// An class representing a managed way to interact with MQTT.
@@ -46,11 +46,11 @@ namespace Unifi.Managers
 
             if (string.IsNullOrEmpty(slug))
             {
-                this.Logger.LogDebug($"Unable to find slug for {input.Mac}");
+                this.Logger.LogDebug("Unable to find slug for {macAddress}", input.Mac);
                 return results;
             }
 
-            this.Logger.LogDebug($"Found slug {slug} for incoming data for {input.Mac}");
+            this.Logger.LogDebug("Found slug {slug} for incoming data for {macAddress}", slug, input.Mac);
             results.AddRange(new[]
                 {
                     (this.Generator.StateTopic(slug), this.Generator.BooleanOnOff(input.State)),
@@ -74,7 +74,7 @@ namespace Unifi.Managers
             {
                 foreach (var map in mapping)
                 {
-                    this.Logger.LogDebug($"Generating discovery for {input.MACAddress} - {map.Sensor}");
+                    this.Logger.LogDebug("Generating discovery for {macAddress} - {sensor}", input.MACAddress, map.Sensor);
                     var discovery = this.Generator.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
                     discovery.DeviceClass = "presence";
 

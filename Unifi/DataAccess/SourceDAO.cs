@@ -133,11 +133,11 @@ namespace Unifi.DataAccess
         private async Task<FetchResponse?> FetchAsync(string macAddress,
             CancellationToken cancellationToken = default)
         {
-            this.Logger.LogDebug($"Started finding {macAddress} from Unifi");
+            this.Logger.LogDebug("Started finding {macAddress} from Unifi", macAddress);
             var clients = await this.AllClientsAsync(cancellationToken);
             if (clients == null)
             {
-                this.Logger.LogDebug($"Unable to find {macAddress} from Unifi");
+                this.Logger.LogDebug("Unable to find {macAddress} from Unifi", macAddress);
                 return null;
             }
 
@@ -168,7 +168,7 @@ namespace Unifi.DataAccess
         /// <returns></returns>
         private async Task<IEnumerable<KoenZomers.UniFi.Api.Responses.Clients>> AllClientsAsync(CancellationToken cancellationToken = default)
         {
-            this.Logger.LogDebug($"Started fetching all clients from Unifi");
+            this.Logger.LogDebug("Started fetching all clients from Unifi");
             await this.ClientsSemaphore.WaitAsync();
 
             try
@@ -176,7 +176,7 @@ namespace Unifi.DataAccess
                 // Check cache first to avoid hammering the API
                 if (this.Cache.TryGetValue(ACTIVECLIENTS, out IEnumerable<KoenZomers.UniFi.Api.Responses.Clients> cachedObj))
                 {
-                    this.Logger.LogDebug($"Found all clients in the cache");
+                    this.Logger.LogDebug("Found all clients in the cache");
                     return cachedObj;
                 }
 
@@ -187,7 +187,7 @@ namespace Unifi.DataAccess
 
                 var clients = await this.UnifiClient.GetActiveClients();
 
-                this.Logger.LogDebug($"Caching {clients.Count} clients");
+                this.Logger.LogDebug("Caching {count} clients", clients.Count);
                 var cts = new CancellationTokenSource(new TimeSpan(0, 0, 9));
                 var cacheOpts = new MemoryCacheEntryOptions()
                      .AddExpirationToken(new CancellationChangeToken(cts.Token));

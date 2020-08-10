@@ -9,9 +9,8 @@ using KoenZomers.UniFi.Api;
 using TwoMQTT.Core;
 using TwoMQTT.Core.Extensions;
 using Unifi.DataAccess;
-using Unifi.Managers;
+using Unifi.Liasons;
 using Unifi.Models.Shared;
-using TwoMQTT.Core.Interfaces;
 using TwoMQTT.Core.Utils;
 using System.Collections.Generic;
 
