@@ -3,7 +3,7 @@
 # Licensed under the MIT License. See https://go.microsoft.com/fwlink/?linkid=2090316 for license information.
 #-------------------------------------------------------------------------------------------------------------
 
-ARG DOTNETCORE_VERSION=3.1
+ARG DOTNETCORE_VERSION=3.1.401
 FROM mcr.microsoft.com/dotnet/core/sdk:${DOTNETCORE_VERSION}
 
 # This Dockerfile adds a non-root 'vscode' user with sudo access. However, for Linux,

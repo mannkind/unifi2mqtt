@@ -18,7 +18,7 @@ jobs:
       - name: Set up dotnet
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.201'
+          dotnet-version: '3.1.401'
 
       - name: Check out code
         uses: actions/checkout@v1
