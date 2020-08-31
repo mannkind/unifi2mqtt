@@ -12,18 +12,12 @@ using KoenZomers.UniFi.Api;
 using Newtonsoft.Json;
 using Unifi.Models.Shared;
 using Unifi.Models.Source;
+using TwoMQTT.Core.Interfaces;
 
 namespace Unifi.DataAccess
 {
-    public interface ISourceDAO
+    public interface ISourceDAO : ISourceDAO<SlugMapping, Response, Command, object>
     {
-        /// <summary>
-        /// Fetch one response from the source.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<FetchResponse?> FetchOneAsync(SlugMapping data, CancellationToken cancellationToken = default);
     }
 
     /// <summary>
@@ -53,7 +47,7 @@ namespace Unifi.DataAccess
         }
 
         /// <inheritdoc />
-        public async Task<FetchResponse?> FetchOneAsync(SlugMapping data,
+        public async Task<Response?> FetchOneAsync(SlugMapping data,
             CancellationToken cancellationToken = default)
         {
             try
@@ -130,7 +124,7 @@ namespace Unifi.DataAccess
         /// <param name="data"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task<FetchResponse?> FetchAsync(string macAddress,
+        private async Task<Response?> FetchAsync(string macAddress,
             CancellationToken cancellationToken = default)
         {
             this.Logger.LogDebug("Started finding {macAddress} from Unifi", macAddress);
@@ -153,7 +147,7 @@ namespace Unifi.DataAccess
                 dt = this.LastSeen[macAddress];
             }
 
-            return new FetchResponse
+            return new Response
             {
                 MACAddress = macAddress,
                 State = dt > (DateTime.Now - this.AwayTimeout),

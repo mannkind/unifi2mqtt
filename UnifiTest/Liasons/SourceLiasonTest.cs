@@ -38,7 +38,7 @@ namespace UnifiTest.Liasons
                 });
 
                 sourceDAO.Setup(x => x.FetchOneAsync(test.Q, It.IsAny<CancellationToken>()))
-                     .ReturnsAsync(new Unifi.Models.Source.FetchResponse
+                     .ReturnsAsync(new Unifi.Models.Source.Response
                      {
                          MACAddress = test.Expected.MACAddress,
                          State = test.Expected.State,

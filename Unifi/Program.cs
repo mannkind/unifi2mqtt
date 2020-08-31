@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,11 +9,13 @@ using Microsoft.Extensions.Options;
 using KoenZomers.UniFi.Api;
 using TwoMQTT.Core;
 using TwoMQTT.Core.Extensions;
+using TwoMQTT.Core.Interfaces;
+using TwoMQTT.Core.Managers;
+using TwoMQTT.Core.Utils;
 using Unifi.DataAccess;
 using Unifi.Liasons;
 using Unifi.Models.Shared;
-using TwoMQTT.Core.Utils;
-using System.Collections.Generic;
+
 
 namespace Unifi
 {
@@ -51,6 +54,11 @@ namespace Unifi
                 .AddSingleton<IThrottleManager, ThrottleManager>(x =>
                 {
                     var opts = x.GetService<IOptions<Models.Options.SourceOpts>>();
+                    if (opts == null)
+                    {
+                        throw new ArgumentException($"{nameof(opts.Value.PollingInterval)} is required for {nameof(ThrottleManager)}.");
+                    }
+
                     return new ThrottleManager(opts.Value.PollingInterval);
                 })
                 .AddSingleton<Api>(x =>
@@ -60,9 +68,34 @@ namespace Unifi
                 })
                 .AddSingleton<ISourceDAO>(x =>
                 {
+                    var logger = x.GetService<ILogger<SourceDAO>>();
+                    var cache = x.GetService<IMemoryCache>();
+                    var api = x.GetService<Api>();
                     var opts = x.GetService<IOptions<Models.Options.SourceOpts>>();
+
+                    if (logger == null)
+                    {
+                        throw new ArgumentException($"{nameof(logger)} is required for {nameof(SourceDAO)}.");
+                    }
+                    if (cache == null)
+                    {
+                        throw new ArgumentException($"{nameof(cache)} is required for {nameof(SourceDAO)}.");
+                    }
+                    if (api == null)
+                    {
+                        throw new ArgumentException($"{nameof(api)} is required for {nameof(SourceDAO)}.");
+                    }
+                    if (logger == null)
+                    {
+                        throw new ArgumentException($"{nameof(logger)} is required for {nameof(SourceDAO)}.");
+                    }
+                    if (opts == null)
+                    {
+                        throw new ArgumentException($"{nameof(opts.Value.Username)}, {nameof(opts.Value.Password)}, and {nameof(opts.Value.AwayTimeout)} are required for {nameof(SourceDAO)}.");
+                    }
+
                     return new SourceDAO(
-                        x.GetService<ILogger<SourceDAO>>(), x.GetService<IMemoryCache>(), x.GetService<Api>(),
+                        logger, cache, api,
                         opts.Value.Username, opts.Value.Password, opts.Value.AwayTimeout
                     );
                 });
