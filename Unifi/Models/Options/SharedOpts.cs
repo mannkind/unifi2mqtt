@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TwoMQTT.Core.Interfaces;
 using Unifi.Models.Shared;
 
 namespace Unifi.Models.Options
@@ -6,7 +7,7 @@ namespace Unifi.Models.Options
     /// <summary>
     /// The shared options across the application
     /// </summary>
-    public class SharedOpts
+    public class SharedOpts : ISharedOpts<SlugMapping>
     {
         public const string Section = "Unifi";
 
