@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.11.$([System.DateTime]::UtcNow.ToString(yy))$([System.DateTime]::UtcNow.DayOfYear.ToString(000)).$([System.DateTime]::UtcNow.ToString(HHmm))$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.Second), 6))))</VersionPrefix>
+    <VersionPrefix>0.12.$([System.DateTime]::UtcNow.ToString(yy))$([System.DateTime]::UtcNow.DayOfYear.ToString(000)).$([System.DateTime]::UtcNow.ToString(HHmm))$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.Second), 6))))</VersionPrefix>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
+    <TargetLanguage>9.0</TargetLanguage>
     <Nullable>enable</Nullable>
     <RestoreSources>$(RestoreSources);../vendor;https://api.nuget.org/v3/index.json</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="twomqtt" Version="0.8.*" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.0" />
+    <PackageReference Include="twomqtt" Version="0.9.20247.1124-dev" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0-preview.8.20407.11" />
     <PackageReference Include="KoenZomers.UniFi.Api" Version="1.1.*" />
   </ItemGroup>
 

@@ -16,7 +16,7 @@ using TwoMQTT.Core.Interfaces;
 
 namespace Unifi.DataAccess
 {
-    public interface ISourceDAO : ISourceDAO<SlugMapping, Response, Command, object>
+    public interface ISourceDAO : ISourceDAO<SlugMapping, Response, object, object>
     {
     }
 
