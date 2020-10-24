@@ -12,7 +12,7 @@ using KoenZomers.UniFi.Api;
 using Newtonsoft.Json;
 using Unifi.Models.Shared;
 using Unifi.Models.Source;
-using TwoMQTT.Core.Interfaces;
+using TwoMQTT.Interfaces;
 
 namespace Unifi.DataAccess
 {
