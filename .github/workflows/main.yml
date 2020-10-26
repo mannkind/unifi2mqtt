@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-      - uses: rlespinasse/github-slug-action@master
+      - uses: rlespinasse/github-slug-action@1.1.1
 
       - name: Setup specific variables
         run: |
