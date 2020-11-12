@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MQTTnet.Extensions.ManagedClient;
-using TwoMQTT.Core;
-using TwoMQTT.Core.Interfaces;
-using TwoMQTT.Core.Liasons;
-using TwoMQTT.Core.Managers;
-using TwoMQTT.Core.Models;
-using TwoMQTT.Core.Utils;
+using TwoMQTT;
+using TwoMQTT.Interfaces;
+using TwoMQTT.Liasons;
+using TwoMQTT.Managers;
+using TwoMQTT.Models;
+using TwoMQTT.Utils;
 using Unifi.Models.Options;
 using Unifi.Models.Shared;
 
@@ -21,7 +21,7 @@ namespace Unifi.Liasons
     /// <summary>
     /// An class representing a managed way to interact with MQTT.
     /// </summary>
-    public class MQTTLiason : MQTTLiasonBase<Resource, Command, SlugMapping, SharedOpts>, IMQTTLiason<Resource, Command>
+    public class MQTTLiason : MQTTLiasonBase<Resource, object, SlugMapping, SharedOpts>, IMQTTLiason<Resource, object>
     {
         /// <summary>
         /// 
@@ -75,7 +75,10 @@ namespace Unifi.Liasons
                 {
                     this.Logger.LogDebug("Generating discovery for {macAddress} - {sensor}", input.MACAddress, map.Sensor);
                     var discovery = this.Generator.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
-                    discovery.DeviceClass = "presence";
+                    discovery = discovery with
+                    {
+                        DeviceClass = "presence",
+                    };
 
                     discoveries.Add((input.Slug, map.Sensor, map.Type, discovery));
                 }

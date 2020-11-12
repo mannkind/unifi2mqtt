@@ -5,19 +5,19 @@ namespace Unifi.Models.Source
     /// <summary>
     /// The response from the source
     /// </summary>
-    public class Response
+    public record Response
     {
         /// <summary>
         /// 
         /// </summary>
         /// <value></value>
-        public string MACAddress { get; set; } = string.Empty;
+        public string MACAddress { get; init; } = string.Empty;
 
         /// <summary>
         /// 
         /// </summary>
         /// <value></value>
-        public bool State { get; set; } = false;
+        public bool State { get; init; } = false;
 
         /// <inheritdoc />
         public override string ToString() => $"Mac: {this.MACAddress}, State: {this.State}";

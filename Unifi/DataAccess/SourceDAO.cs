@@ -12,11 +12,11 @@ using KoenZomers.UniFi.Api;
 using Newtonsoft.Json;
 using Unifi.Models.Shared;
 using Unifi.Models.Source;
-using TwoMQTT.Core.Interfaces;
+using TwoMQTT.Interfaces;
 
 namespace Unifi.DataAccess
 {
-    public interface ISourceDAO : ISourceDAO<SlugMapping, Response, Command, object>
+    public interface ISourceDAO : ISourceDAO<SlugMapping, Response, object, object>
     {
     }
 
@@ -56,9 +56,12 @@ namespace Unifi.DataAccess
             }
             catch (Exception e)
             {
-                var msg = e is HttpRequestException ? "Unable to fetch from the Unifi API" :
-                          e is JsonException ? "Unable to deserialize response from the Unifi API" :
-                          "Unable to send to the Unifi API";
+                var msg = e switch
+                {
+                    HttpRequestException => "Unable to fetch from the Unifi API",
+                    JsonException => "Unable to deserialize response from the Unifi API",
+                    _ => "Unable to send to the Unifi API"
+                };
                 this.Logger.LogError(msg, e);
                 this.IsLoggedIn = false;
                 return null;
