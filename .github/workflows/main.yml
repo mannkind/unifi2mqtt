@@ -1,4 +1,4 @@
-name: Main Workflow
+name: Master Workflow
 on:
   push:
   pull_request:
@@ -10,10 +10,10 @@ jobs:
     steps:
       - uses: rlespinasse/github-slug-action@1.1.1
 
-      - name: Setup specific variables
+      - name: Setup envs for later
         run: |
-          echo "::set-env name=DOCKER_IMAGE::mannkind/unifi2mqtt"
-          echo "::set-env name=BUILD_APP::Unifi"
+          echo "DOCKER_IMAGE=mannkind/unifi2mqtt" >> $GITHUB_ENV
+          echo "BUILD_APP=Unifi" >> $GITHUB_ENV
 
       - name: Set up dotnet
         uses: actions/setup-dotnet@v1
@@ -23,23 +23,44 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v1
 
-      - name: Build and test application
+      - name: Build 
         env:
           BUILD_APP: ${{ env.BUILD_APP }}
-        run: |
-          dotnet build -c Release -o output ${BUILD_APP}
-          dotnet test --collect:"XPlat Code Coverage" ${BUILD_APP}Test
-          bash <(curl -s https://codecov.io/bash)
-          echo "::set-env name=BUILD_VERSION::$(./output/${BUILD_APP} -- version)"
+        run: dotnet build -c Release -o output ${BUILD_APP}
 
-      - name: Set up Docker Buildx
+      - name: Test
+        env:
+          BUILD_APP: ${{ env.BUILD_APP }}
+        run: dotnet test --collect:"XPlat Code Coverage" ${BUILD_APP}Test
+
+      - name: Upload coverage
+        run: bash <(curl -s https://codecov.io/bash)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+      - name: Setup more envs for later
+        env:
+          BUILD_APP: ${{ env.BUILD_APP }}
+        run: echo "BUILD_VERSION=$(./output/${BUILD_APP} -- version)" >> $GITHUB_ENV
+
+      - name: Setup docker buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
           version: latest
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
 
-      - name: Build/Push Docker Images (Master)
+      - name: Build and push docker images (Non-Master)
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_CLI_EXPERIMENTAL: "enabled"
+          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:dev" .
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+
+      - name: Build and push docker images (Master)
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -61,14 +82,3 @@ jobs:
           sed -i -e "s/github.com/mannkind:${GITHUB_TOKEN}@github.com/g" .git/config
           git push --tags
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-
-      - name: Build/Push Docker Images (Non-Master)
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_CLI_EXPERIMENTAL: "enabled"
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
-        run: |
-          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:dev" .
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
