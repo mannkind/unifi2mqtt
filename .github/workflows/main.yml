@@ -1,4 +1,4 @@
-name: Master Workflow
+name: Main Workflow
 on:
   push:
   pull_request:
@@ -35,7 +35,7 @@ jobs:
 
       - name: Upload coverage
         run: bash <(curl -s https://codecov.io/bash)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
       - name: Setup more envs for later
         env:
@@ -47,9 +47,9 @@ jobs:
         uses: crazy-max/ghaction-docker-buildx@v1
         with:
           version: latest
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
 
-      - name: Build and push docker images (Non-Master)
+      - name: Build and push docker images (Non-Main)
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -60,7 +60,7 @@ jobs:
           docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:dev" .
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
 
-      - name: Build and push docker images (Master)
+      - name: Build and push docker images (Main)
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -71,7 +71,7 @@ jobs:
           echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
           docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:latest" .
           docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:${BUILD_VERSION}" .
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
       - name: Tag and push the git release
         env:
@@ -81,4 +81,4 @@ jobs:
           git tag -f $BUILD_VERSION
           sed -i -e "s/github.com/mannkind:${GITHUB_TOKEN}@github.com/g" .git/config
           git push --tags
-        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
