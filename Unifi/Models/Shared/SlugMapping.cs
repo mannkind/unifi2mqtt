@@ -16,8 +16,5 @@ namespace Unifi.Models.Shared
         /// </summary>
         /// <value></value>
         public string Slug { get; init; } = string.Empty;
-
-        /// <inheritdoc />
-        public override string ToString() => $"Mac: {this.MACAddress}, Slug: {this.Slug}";
     }
 }

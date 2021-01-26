@@ -62,7 +62,7 @@ namespace Unifi.DataAccess
                     JsonException => "Unable to deserialize response from the Unifi API",
                     _ => "Unable to send to the Unifi API"
                 };
-                this.Logger.LogError(msg, e);
+                this.Logger.LogError(msg + "; {exception}", e);
                 this.IsLoggedIn = false;
                 return null;
             }
