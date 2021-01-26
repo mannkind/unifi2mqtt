@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using KoenZomers.UniFi.Api;
 using TwoMQTT;
 using TwoMQTT.Extensions;
 using TwoMQTT.Interfaces;
@@ -14,14 +13,14 @@ using TwoMQTT.Managers;
 using Unifi.DataAccess;
 using Unifi.Liasons;
 using Unifi.Models.Shared;
-
+using System.Net.Http;
 
 namespace Unifi
 {
     class Program
     {
-        static async Task Main(string[] args) => await ConsoleProgram<Resource, object, SourceLiason, MQTTLiason>.
-            ExecuteAsync(args,
+        static async Task Main(string[] args) =>
+            await ConsoleProgram<Resource, object, SourceLiason, MQTTLiason>.ExecuteAsync(args,
                 envs: new Dictionary<string, string>()
                 {
                     {
@@ -45,16 +44,19 @@ namespace Unifi
                             var opts = x.GetRequiredService<IOptions<Models.Options.SourceOpts>>();
                             return new ThrottleManager(opts.Value.PollingInterval);
                         })
+                        .AddTypeNamedHttpClient<ApiControllerDetection>()
+                        .AddTypeNamedHttpClient<Api>(lifetime: System.Threading.Timeout.InfiniteTimeSpan)
                         .AddSingleton<Api>(x =>
                         {
                             var opts = x.GetRequiredService<IOptions<Models.Options.SourceOpts>>();
-                            return new Api(new Uri(opts.Value.Host));
+                            var hcf = x.GetRequiredService<IHttpClientFactory>(); // Hopefully this only exists until KoenZomers.UniFi.Api is updated.
+                            return new Api(new Uri(opts.Value.Host), opts.Value.Site, hcf);
                         })
                         .AddSingleton<ISourceDAO>(x =>
                         {
                             var logger = x.GetRequiredService<ILogger<SourceDAO>>();
                             var cache = x.GetRequiredService<IMemoryCache>();
-                            var api = x.GetRequiredService<Api>();
+                            var api = x.GetRequiredService<DataAccess.Api>();
                             var opts = x.GetRequiredService<IOptions<Models.Options.SourceOpts>>();
                             return new SourceDAO(logger,
                                 cache,

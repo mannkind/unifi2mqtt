@@ -51,5 +51,12 @@ namespace Unifi.Models.Options
         /// <returns></returns>
         [Required(ErrorMessage = Section + ":" + nameof(PollingInterval) + " is missing")]
         public TimeSpan PollingInterval { get; init; } = new(0, 0, 11);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [Required(ErrorMessage = Section + ":" + nameof(DisableSslValidation) + " is missing")]
+        public bool DisableSslValidation { get; init; } = true;
     }
 }

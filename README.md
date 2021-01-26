@@ -47,6 +47,7 @@ UNIFI__USERNAME                           - The Unifi Controller Username
 UNIFI__PASSWORD                           - The Unifi Controller Password
 UNIFI__AWAYTIMEOUT                        - [OPTIONAL] The delay between last seeing a device and marking it as away, defaults to "0.00:05:01"
 UNIFI__POLLINGINTERVAL                    - [OPTIONAL] The delay between device lookups, defaults to "0.00:00:11"
+UNIFI__DISABLESSLVALIDATION               - [OPTIONAL] The flag that disables SSL validation, defaults to true
 UNIFI__RESOURCES__#__MACAddress           - The n-th iteration of a mac address for a specific device
 UNIFI__RESOURCES__#__Slug                 - The n-th iteration of a slug to identify the specific mac address
 UNIFI__MQTT__TOPICPREFIX                  - [OPTIONAL] The MQTT topic on which to publish the collection lookup results, defaults to "home/unifi"

@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
-using KoenZomers.UniFi.Api;
 using Newtonsoft.Json;
 using Unifi.Models.Shared;
 using Unifi.Models.Source;
@@ -43,7 +42,6 @@ namespace Unifi.DataAccess
             this.Password = password;
             this.AwayTimeout = awayTimeout;
             this.UnifiClient = unifiClient;
-            this.UnifiClient.DisableSslValidation();
         }
 
         /// <inheritdoc />
@@ -163,7 +161,7 @@ namespace Unifi.DataAccess
         /// <param name="data"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task<IEnumerable<KoenZomers.UniFi.Api.Responses.Clients>> AllClientsAsync(CancellationToken cancellationToken = default)
+        private async Task<IEnumerable<Clients>> AllClientsAsync(CancellationToken cancellationToken = default)
         {
             this.Logger.LogDebug("Started fetching all clients from Unifi");
             await this.ClientsSemaphore.WaitAsync();
@@ -171,7 +169,7 @@ namespace Unifi.DataAccess
             try
             {
                 // Check cache first to avoid hammering the API
-                if (this.Cache.TryGetValue(ACTIVECLIENTS, out IEnumerable<KoenZomers.UniFi.Api.Responses.Clients> cachedObj))
+                if (this.Cache.TryGetValue(ACTIVECLIENTS, out IEnumerable<Clients> cachedObj))
                 {
                     this.Logger.LogDebug("Found all clients in the cache");
                     return cachedObj;
