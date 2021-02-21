@@ -1,16 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MQTTnet.Extensions.ManagedClient;
 using TwoMQTT;
 using TwoMQTT.Interfaces;
 using TwoMQTT.Liasons;
-using TwoMQTT.Managers;
 using TwoMQTT.Models;
 using TwoMQTT.Utils;
 using Unifi.Models.Options;

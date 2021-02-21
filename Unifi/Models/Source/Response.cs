@@ -18,8 +18,5 @@ namespace Unifi.Models.Source
         /// </summary>
         /// <value></value>
         public bool State { get; init; } = false;
-
-        /// <inheritdoc />
-        public override string ToString() => $"Mac: {this.MACAddress}, State: {this.State}";
     }
 }

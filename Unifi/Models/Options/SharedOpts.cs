@@ -16,6 +16,6 @@ namespace Unifi.Models.Options
         /// </summary>
         /// <typeparam name="SlugMapping"></typeparam>
         /// <returns></returns>
-        public List<SlugMapping> Resources { get; init; } = new List<SlugMapping>();
+        public List<SlugMapping> Resources { get; init; } = new();
     }
 }
