@@ -17,14 +17,14 @@ namespace Unifi
         /// <param name="services"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static IServiceCollection AddTypeNamedHttpClient<T>(this IServiceCollection services, TimeSpan? lifetime = null)
+        public static IServiceCollection AddTypeNamedHttpClient<T>(this IServiceCollection services, bool allowAutoRedirect = true, TimeSpan? lifetime = null)
             where T : class =>
             services
                 .AddHttpClient(typeof(T).Name)
                 .ConfigurePrimaryHttpMessageHandler((x) =>
                 {
                     var opts = x.GetRequiredService<IOptions<Models.Options.SourceOpts>>();
-                    return SetupHttpClientHandler(true, !opts.Value.DisableSslValidation);
+                    return SetupHttpClientHandler(allowAutoRedirect, !opts.Value.DisableSslValidation);
                 })
                 .SetHandlerLifetime(lifetime ?? TimeSpan.FromMinutes(2))
                 .Services;

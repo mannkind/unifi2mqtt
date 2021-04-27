@@ -44,7 +44,7 @@ namespace Unifi
                             var opts = x.GetRequiredService<IOptions<Models.Options.SourceOpts>>();
                             return new ThrottleManager(opts.Value.PollingInterval);
                         })
-                        .AddTypeNamedHttpClient<ApiControllerDetection>()
+                        .AddTypeNamedHttpClient<ApiControllerDetection>(allowAutoRedirect: false)
                         .AddTypeNamedHttpClient<Api>(lifetime: System.Threading.Timeout.InfiniteTimeSpan)
                         .AddSingleton<Api>(x =>
                         {
