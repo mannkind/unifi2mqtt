@@ -148,6 +148,7 @@ namespace Unifi.DataAccess
                 dt = this.LastSeen[macAddress];
             }
 
+            this.Logger.LogDebug("{macAddress} found in controller: {found}; last seen at {dt}; presence: {state}", macAddress, client != null, dt, dt > (DateTime.Now - this.AwayTimeout));
             return new Response
             {
                 MACAddress = macAddress,
