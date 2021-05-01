@@ -136,10 +136,10 @@ namespace Unifi.DataAccess
                 return null;
             }
 
-            var client = clients.FirstOrDefault(x => x.MacAddress == macAddress);
+            var client = clients.FirstOrDefault(x => x.MacAddress.Equals(macAddress, StringComparison.OrdinalIgnoreCase));
             if (client != null)
             {
-                this.LastSeen[client.MacAddress] = DateTime.Now;
+                this.LastSeen[macAddress] = DateTime.Now;
             }
 
             var dt = DateTime.MinValue;
