@@ -21,7 +21,7 @@ jobs:
           dotnet-version: '5.0.x'
 
       - name: Check out code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: Build 
         env:
@@ -75,10 +75,8 @@ jobs:
 
       - name: Tag and push the git release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BUILD_VERSION: ${{ env.BUILD_VERSION }}
         run: |
           git tag -f $BUILD_VERSION
-          sed -i -e "s/github.com/mannkind:${GITHUB_TOKEN}@github.com/g" .git/config
           git push --tags
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
