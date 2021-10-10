@@ -27,6 +27,7 @@ namespace Unifi.Liasons
         public MQTTLiason(ILogger<MQTTLiason> logger, IMQTTGenerator generator, IOptions<SharedOpts> sharedOpts) :
             base(logger, generator, sharedOpts)
         {
+            this.AsDeviceTracker = sharedOpts.Value.AsDeviceTracker;
         }
 
         /// <inheritdoc />
@@ -47,7 +48,7 @@ namespace Unifi.Liasons
             this.Logger.LogDebug("Found slug {slug} for incoming data for {macAddress}", slug, input.Mac);
             results.AddRange(new[]
                 {
-                    (this.Generator.StateTopic(slug), this.Generator.BooleanOnOff(input.State)),
+                    (this.Generator.StateTopic(slug), this.AsState(input.State)),
                 }
             );
 
@@ -61,7 +62,7 @@ namespace Unifi.Liasons
             var assembly = Assembly.GetAssembly(typeof(Program))?.GetName() ?? new AssemblyName();
             var mapping = new[]
             {
-                new { Sensor = string.Empty, Type = Const.BINARY_SENSOR },
+                new { Sensor = string.Empty, Type = this.AsDeviceTracker ? Const.DEVICE_TRACKER : Const.BINARY_SENSOR },
             };
 
             foreach (var input in this.Questions)
@@ -70,10 +71,7 @@ namespace Unifi.Liasons
                 {
                     this.Logger.LogDebug("Generating discovery for {macAddress} - {sensor}", input.MACAddress, map.Sensor);
                     var discovery = this.Generator.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
-                    discovery = discovery with
-                    {
-                        DeviceClass = "presence",
-                    };
+                    discovery = this.AsDiscovery(discovery);
 
                     discoveries.Add((input.Slug, map.Sensor, map.Type, discovery));
                 }
@@ -81,5 +79,28 @@ namespace Unifi.Liasons
 
             return discoveries;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private readonly bool AsDeviceTracker;
+
+        private string AsState(bool input) =>
+            this.AsDeviceTracker
+                ? this.Generator.BooleanHomeNotHome(input)
+                : this.Generator.BooleanOnOff(input);
+
+        private MQTTDiscovery AsDiscovery(MQTTDiscovery input) =>
+            this.AsDeviceTracker
+                ? input with
+                {
+                    PayloadHome = this.Generator.BooleanHomeNotHome(true),
+                    PayloadNotHome = this.Generator.BooleanHomeNotHome(false),
+                    SourceType = "router",
+                }
+                : input with
+                {
+                    DeviceClass = "presence",
+                };
     }
 }

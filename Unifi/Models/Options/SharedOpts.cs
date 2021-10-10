@@ -17,5 +17,11 @@ namespace Unifi.Models.Options
         /// <typeparam name="SlugMapping"></typeparam>
         /// <returns></returns>
         public List<SlugMapping> Resources { get; init; } = new();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public bool AsDeviceTracker { get; init; } = false;
     }
 }

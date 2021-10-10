@@ -14,7 +14,7 @@ namespace Unifi.Liasons
     /// <summary>
     /// A class representing a managed way to interact with a source.
     /// </summary>
-    public class SourceLiason : SourceLiasonBase<Resource, object, SlugMapping, ISourceDAO, SharedOpts>, ISourceLiason<Resource, object>
+    public class SourceLiason : PollingSourceLiasonBase<Resource, SlugMapping, ISourceDAO, SharedOpts>, ISourceLiason<Resource, object>
     {
         public SourceLiason(ILogger<SourceLiason> logger, ISourceDAO sourceDAO,
             IOptions<SourceOpts> opts, IOptions<SharedOpts> sharedOpts) :

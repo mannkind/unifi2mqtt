@@ -53,7 +53,7 @@ namespace Unifi.DataAccess
         /// 
         /// </summary>
         private readonly Uri Host;
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -80,7 +80,7 @@ namespace Unifi.DataAccess
             {
                 return "api/auth/login";
             }
-            
+
             return $"proxy/network/{url}";
         }
     }

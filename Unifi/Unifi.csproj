@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.12.$([System.DateTime]::UtcNow.ToString(yy))$([System.DateTime]::UtcNow.DayOfYear.ToString(000)).$([System.DateTime]::UtcNow.ToString(HHmm))$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.Second), 6))))</VersionPrefix>
+    <VersionPrefix>0.13.$([System.DateTime]::UtcNow.ToString(yy))$([System.DateTime]::UtcNow.DayOfYear.ToString(000)).$([System.DateTime]::UtcNow.ToString(HHmm))$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.Second), 6))))</VersionPrefix>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <TargetLanguage>9.0</TargetLanguage>

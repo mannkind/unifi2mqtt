@@ -45,7 +45,7 @@ namespace UnifiTest.Liasons
                      });
 
                 var sourceLiason = new SourceLiason(logger.Object, sourceDAO.Object, opts, sharedOpts);
-                await foreach (var result in sourceLiason.FetchAllAsync())
+                await foreach (var result in sourceLiason.ReceiveDataAsync())
                 {
                     Assert.AreEqual(test.Expected.MACAddress, result.Mac);
                     Assert.AreEqual(test.Expected.State, result.State);
