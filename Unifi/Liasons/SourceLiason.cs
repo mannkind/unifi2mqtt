@@ -27,6 +27,7 @@ namespace Unifi.Liasons
                 "Site: {site}\n" +
                 "AwayTimeout: {awayTimeout}\n" +
                 "PollingInterval: {pollingInterval}\n" +
+                "AsDeviceTracker: {asDeviceTracker}\n" +
                 "Resources: {@resources}\n" +
                 "",
                 opts.Value.Host,
@@ -35,6 +36,7 @@ namespace Unifi.Liasons
                 opts.Value.Site,
                 opts.Value.AwayTimeout,
                 opts.Value.PollingInterval,
+                sharedOpts.Value.AsDeviceTracker,
                 sharedOpts.Value.Resources
             );
         }
