@@ -4,14 +4,13 @@
     <VersionPrefix>0.13.$([System.DateTime]::UtcNow.ToString(yy))$([System.DateTime]::UtcNow.DayOfYear.ToString(000)).$([System.DateTime]::UtcNow.ToString(HHmm))$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.Second), 6))))</VersionPrefix>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <TargetLanguage>9.0</TargetLanguage>
     <Nullable>enable</Nullable>
     <RestoreSources>$(RestoreSources);../vendor;https://api.nuget.org/v3/index.json</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="twomqtt" Version="0.12.21283.5469-dev" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="twomqtt" Version="0.12.*-dev*" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.*-rc.*" />
   </ItemGroup>
 
 </Project>
