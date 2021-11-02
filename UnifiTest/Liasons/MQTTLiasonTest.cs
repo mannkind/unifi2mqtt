@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using TwoMQTT.Utils;
+using TwoMQTT.Interfaces;
 using Unifi.Liasons;
 using Unifi.Models.Options;
 using Unifi.Models.Shared;
