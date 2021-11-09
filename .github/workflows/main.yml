@@ -11,7 +11,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - uses: mannkind/twomqtt/.github/actions/build-test-dotnet@dev
+      - uses: mannkind/twomqtt/.github/actions/build-test-dotnet@main
         id: build
         with:
           dotnet_version: '6.0.x'
@@ -22,7 +22,7 @@ jobs:
         run: bash <(curl -s https://codecov.io/bash)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-      - uses: mannkind/twomqtt/.github/actions/build-docker@dev
+      - uses: mannkind/twomqtt/.github/actions/build-docker@main
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -31,7 +31,7 @@ jobs:
           tag: dev
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
 
-      - uses: mannkind/twomqtt/.github/actions/build-docker@dev
+      - uses: mannkind/twomqtt/.github/actions/build-docker@main
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -40,7 +40,7 @@ jobs:
           tag: ${{ steps.build.outputs.version }}
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-      - uses: mannkind/twomqtt/.github/actions/build-docker@dev
+      - uses: mannkind/twomqtt/.github/actions/build-docker@main
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
