@@ -11,75 +11,95 @@ using TwoMQTT.Utils;
 using Unifi.Models.Options;
 using Unifi.Models.Shared;
 
-namespace Unifi.Liasons
+namespace Unifi.Liasons;
+
+/// <summary>
+/// An class representing a managed way to interact with MQTT.
+/// </summary>
+public class MQTTLiason : MQTTLiasonBase<Resource, object, SlugMapping, SharedOpts>, IMQTTLiason<Resource, object>
 {
     /// <summary>
-    /// An class representing a managed way to interact with MQTT.
+    /// 
     /// </summary>
-    public class MQTTLiason : MQTTLiasonBase<Resource, object, SlugMapping, SharedOpts>, IMQTTLiason<Resource, object>
+    /// <param name="logger"></param>
+    /// <param name="generator"></param>
+    /// <param name="sharedOpts"></param>
+    public MQTTLiason(ILogger<MQTTLiason> logger, IMQTTGenerator generator, IOptions<SharedOpts> sharedOpts) :
+        base(logger, generator, sharedOpts)
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="generator"></param>
-        /// <param name="sharedOpts"></param>
-        public MQTTLiason(ILogger<MQTTLiason> logger, IMQTTGenerator generator, IOptions<SharedOpts> sharedOpts) :
-            base(logger, generator, sharedOpts)
+        this.AsDeviceTracker = sharedOpts.Value.AsDeviceTracker;
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<(string topic, string payload)> MapData(Resource input)
+    {
+        var results = new List<(string, string)>();
+        var slug = this.Questions
+            .Where(x => x.MACAddress == input.Mac)
+            .Select(x => x.Slug)
+            .FirstOrDefault() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(slug))
         {
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<(string topic, string payload)> MapData(Resource input)
-        {
-            var results = new List<(string, string)>();
-            var slug = this.Questions
-                .Where(x => x.MACAddress == input.Mac)
-                .Select(x => x.Slug)
-                .FirstOrDefault() ?? string.Empty;
-
-            if (string.IsNullOrEmpty(slug))
-            {
-                this.Logger.LogDebug("Unable to find slug for {macAddress}", input.Mac);
-                return results;
-            }
-
-            this.Logger.LogDebug("Found slug {slug} for incoming data for {macAddress}", slug, input.Mac);
-            results.AddRange(new[]
-                {
-                    (this.Generator.StateTopic(slug), this.Generator.BooleanOnOff(input.State)),
-                }
-            );
-
+            this.Logger.LogDebug("Unable to find slug for {macAddress}", input.Mac);
             return results;
         }
 
-        /// <inheritdoc />
-        public IEnumerable<(string slug, string sensor, string type, MQTTDiscovery discovery)> Discoveries()
-        {
-            var discoveries = new List<(string, string, string, MQTTDiscovery)>();
-            var assembly = Assembly.GetAssembly(typeof(Program))?.GetName() ?? new AssemblyName();
-            var mapping = new[]
+        this.Logger.LogDebug("Found slug {slug} for incoming data for {macAddress}", slug, input.Mac);
+        results.AddRange(new[]
             {
-                new { Sensor = string.Empty, Type = Const.BINARY_SENSOR },
+                    (this.Generator.StateTopic(slug), this.AsState(input.State)),
+                }
+        );
+
+        return results;
+    }
+
+    /// <inheritdoc />
+    public IEnumerable<(string slug, string sensor, string type, MQTTDiscovery discovery)> Discoveries()
+    {
+        var discoveries = new List<(string, string, string, MQTTDiscovery)>();
+        var assembly = Assembly.GetAssembly(typeof(Program))?.GetName() ?? new AssemblyName();
+        var mapping = new[]
+        {
+                new { Sensor = string.Empty, Type = this.AsDeviceTracker ? Const.DEVICE_TRACKER : Const.BINARY_SENSOR },
             };
 
-            foreach (var input in this.Questions)
+        foreach (var input in this.Questions)
+        {
+            foreach (var map in mapping)
             {
-                foreach (var map in mapping)
-                {
-                    this.Logger.LogDebug("Generating discovery for {macAddress} - {sensor}", input.MACAddress, map.Sensor);
-                    var discovery = this.Generator.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
-                    discovery = discovery with
-                    {
-                        DeviceClass = "presence",
-                    };
+                this.Logger.LogDebug("Generating discovery for {macAddress} - {sensor}", input.MACAddress, map.Sensor);
+                var discovery = this.Generator.BuildDiscovery(input.Slug, map.Sensor, assembly, false);
+                discovery = this.AsDiscovery(discovery);
 
-                    discoveries.Add((input.Slug, map.Sensor, map.Type, discovery));
-                }
+                discoveries.Add((input.Slug, map.Sensor, map.Type, discovery));
             }
-
-            return discoveries;
         }
+
+        return discoveries;
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    private readonly bool AsDeviceTracker;
+
+    private string AsState(bool input) =>
+        this.AsDeviceTracker
+            ? this.Generator.BooleanHomeNotHome(input)
+            : this.Generator.BooleanOnOff(input);
+
+    private MQTTDiscovery AsDiscovery(MQTTDiscovery input) =>
+        this.AsDeviceTracker
+            ? input with
+            {
+                PayloadHome = this.Generator.BooleanHomeNotHome(true),
+                PayloadNotHome = this.Generator.BooleanHomeNotHome(false),
+                SourceType = "router",
+            }
+            : input with
+            {
+                DeviceClass = "presence",
+            };
 }

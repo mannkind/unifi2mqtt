@@ -5,78 +5,52 @@ on:
 jobs:
   all:
     name: Build, Test, Deploy, Tag
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: rlespinasse/github-slug-action@1.1.1
-
-      - name: Setup envs for later
-        run: |
-          echo "DOCKER_IMAGE=mannkind/unifi2mqtt" >> $GITHUB_ENV
-          echo "BUILD_APP=Unifi" >> $GITHUB_ENV
-
-      - name: Set up dotnet
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
-
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Build 
-        env:
-          BUILD_APP: ${{ env.BUILD_APP }}
-        run: dotnet build -c Release -o output ${BUILD_APP}
-
-      - name: Test
-        env:
-          BUILD_APP: ${{ env.BUILD_APP }}
-        run: dotnet test --collect:"XPlat Code Coverage" ${BUILD_APP}Test
+      - uses: mannkind/twomqtt/.github/actions/build-test-dotnet@main
+        id: build
+        with:
+          dotnet_version: '6.0.x'
+          project: Unifi
+          test_project: UnifiTest
 
       - name: Upload coverage
         run: bash <(curl -s https://codecov.io/bash)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-      - name: Setup more envs for later
-        env:
-          BUILD_APP: ${{ env.BUILD_APP }}
-        run: echo "BUILD_VERSION=$(./output/${BUILD_APP} -- version)" >> $GITHUB_ENV
-
-      - name: Setup docker buildx
-        id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          version: latest
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
-
-      - name: Build and push docker images (Non-Main)
+      - uses: mannkind/twomqtt/.github/actions/build-docker@main
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_CLI_EXPERIMENTAL: "enabled"
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
-        run: |
-          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:dev" .
+        with:
+          image: mannkind/unifi2mqtt
+          tag: dev
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
 
-      - name: Build and push docker images (Main)
+      - uses: mannkind/twomqtt/.github/actions/build-docker@main
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          DOCKER_CLI_EXPERIMENTAL: "enabled"
-          DOCKER_IMAGE: ${{ env.DOCKER_IMAGE }}
-          BUILD_VERSION: ${{ env.BUILD_VERSION }}
-        run: |
-          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:latest" .
-          docker buildx build --push --platform=linux/amd64,linux/arm64,linux/arm/v7 -t "${DOCKER_IMAGE}:${BUILD_VERSION}" .
+        with:
+          image: mannkind/unifi2mqtt
+          tag: ${{ steps.build.outputs.version }}
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+      - uses: mannkind/twomqtt/.github/actions/build-docker@main
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        with:
+          image: mannkind/unifi2mqtt
+          tag: latest
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
       - name: Tag and push the git release
-        env:
-          BUILD_VERSION: ${{ env.BUILD_VERSION }}
         run: |
-          git tag -f $BUILD_VERSION
+          git tag -f ${{ steps.build.outputs.version }}
           git push --tags
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
