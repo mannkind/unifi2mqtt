@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="twomqtt" Version="0.12.*-dev*" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.*-rc.*" />
+    <PackageReference Include="twomqtt" Version="0.12.*" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.*" />
   </ItemGroup>
 
 </Project>
