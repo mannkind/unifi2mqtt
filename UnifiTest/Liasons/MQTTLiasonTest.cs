@@ -46,7 +46,7 @@ public class MQTTLiasonTest
 
             var mqttLiason = new MQTTLiason(logger.Object, generator.Object, sharedOpts);
             var results = mqttLiason.MapData(test.Resource);
-            var actual = results.FirstOrDefault();
+            var actual = results.FirstOrDefault(x => x.topic?.Contains(nameof(Resource.State)) ?? false);
 
             Assert.AreEqual(test.Expected.Found, results.Any(), "The mapping should exist if found.");
             if (test.Expected.Found)
