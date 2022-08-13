@@ -1,57 +1,108 @@
 name: Main Workflow
 on:
   push:
-  pull_request:
+    branches:
+      - main
   workflow_dispatch:
+    inputs:
+      tag:
+        description: container image tag
+        default: dev
 jobs:
-  all:
-    name: Build, Test, Deploy, Tag
+  build:
+    name: Build and Test
     runs-on: ubuntu-latest
-
+    outputs:
+      version: ${{ steps.version.outputs.number }}
     steps:
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v2
-
-      - uses: mannkind/twomqtt/.github/actions/build-test-dotnet@main
-        id: build
+        
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
         with:
-          dotnet_version: '6.0.x'
-          project: Unifi
-          test_project: UnifiTest
+          dotnet-version: '6.0.x'
 
+      - name: Build Project
+        run: dotnet build -c Release -o output Unifi
+
+      - name: Test Project
+        run: dotnet test --collect:"XPlat Code Coverage" UnifiTest
+
+      - name: Obtain Version
+        id: version
+        run: echo "::set-output name=number::$(./output/Unifi -- version)"
+          
       - name: Upload coverage
         run: bash <(curl -s https://codecov.io/bash)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  
+  containerize:
+    name: Upload Docker Images
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: mannkind/twomqtt/.github/actions/build-docker@main
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
         with:
-          image: mannkind/unifi2mqtt
-          tag: dev
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-
-      - uses: mannkind/twomqtt/.github/actions/build-docker@main
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          
+      - name: Login to GHCR
+        uses: docker/login-action@v2
         with:
-          image: mannkind/unifi2mqtt
-          tag: ${{ steps.build.outputs.version }}
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: mannkind/twomqtt/.github/actions/build-docker@main
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        with:
-          image: mannkind/unifi2mqtt
-          tag: latest
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-      - name: Tag and push the git release
+      - name: Set up Docker Context for Buildx
+        id: buildx-context
         run: |
-          git tag -f ${{ steps.build.outputs.version }}
+          docker context create builders
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          endpoint: builders
+
+      - name: Setup Build Version
+        id: build_version
+        run: |
+          BUILD_VERSION="${{ needs.build.outputs.version }}"
+          echo "::set-output name=number::${BUILD_VERSION:1}"
+
+      - name: Build and Push (Dev)
+        if: github.event_name == 'workflow_dispatch'
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          platforms: "linux/amd64,linux/arm64,linux/arm/v7"
+          build-args: |
+            BUILD_VERSION=${{ steps.build_version.outputs.number }}
+          tags: "mannkind/unifi2mqtt:dev"
+        
+      - name: Build and Push (Main)
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          platforms: "linux/amd64,linux/arm64,linux/arm/v7"
+          build-args: |
+            BUILD_VERSION=${{ steps.build_version.outputs.number }}
+          tags: "mannkind/unifi2mqtt:latest,mannkind/unifi2mqtt:${{ needs.build.outputs.version }},ghcr.io/mannkind/unifi2mqtt:latest,ghcr.io/mannkind/unifi2mqtt:${{ needs.build.outputs.version }}"
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: containerize
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Tag Revision
+        run: |
+          git tag -f ${{ needs.build.outputs.version }}
+      - name: Push Release
+        run: |
           git push --tags
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
