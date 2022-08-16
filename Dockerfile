@@ -4,7 +4,7 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:6.0 as build
 WORKDIR /src
 # Only fetch dependencies once
 # Find the non-test csproj file, move it to the appropriate folder, and restore project deps
-COPY Unifi/*.csproj ./Unifi
+COPY Unifi/*.csproj ./Unifi/
 RUN mkdir -p vendor && dotnet restore Unifi
 COPY . ./
 # Build the app
