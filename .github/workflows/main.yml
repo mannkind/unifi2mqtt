@@ -97,7 +97,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: containerize
+    needs: [build, containerize]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
