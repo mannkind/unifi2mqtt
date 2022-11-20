@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.13.$([System.DateTime]::UtcNow.ToString(yy))$([System.DateTime]::UtcNow.DayOfYear.ToString(000)).$([System.DateTime]::UtcNow.ToString(HHmm))$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.Second), 6))))</VersionPrefix>
+    <VersionPrefix>0.14.$([System.DateTime]::UtcNow.ToString(yy))$([System.DateTime]::UtcNow.DayOfYear.ToString(000)).$([System.DateTime]::UtcNow.ToString(HHmm))$([System.Math]::Floor($([MSBuild]::Divide($([System.DateTime]::UtcNow.Second), 6))))</VersionPrefix>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <RestoreSources>$(RestoreSources);../vendor;https://api.nuget.org/v3/index.json</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="twomqtt" Version="0.12.*" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.*" />
+    <PackageReference Include="twomqtt" Version="0.13.*" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.*" />
   </ItemGroup>
 
 </Project>

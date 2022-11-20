@@ -16,12 +16,12 @@ jobs:
       version: ${{ steps.version.outputs.number }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '7.0.x'
 
       - name: Build Project
         run: dotnet build -c Release -o output Unifi
@@ -31,7 +31,7 @@ jobs:
 
       - name: Obtain Version
         id: version
-        run: echo "::set-output name=number::$(./output/Unifi -- version)"
+        run: echo "number=$(./output/Unifi -- version)" >> $GITHUB_OUTPUT
           
       - name: Upload coverage
         run: bash <(curl -s https://codecov.io/bash)
@@ -72,7 +72,7 @@ jobs:
         id: build_version
         run: |
           BUILD_VERSION="${{ needs.build.outputs.version }}"
-          echo "::set-output name=number::${BUILD_VERSION:1}"
+          echo "number=${BUILD_VERSION:1}" >> $GITHUB_OUTPUT
 
       - name: Build and Push (Dev)
         if: github.event_name == 'workflow_dispatch'
@@ -101,7 +101,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Tag Revision
         run: |
           git tag -f ${{ needs.build.outputs.version }}
